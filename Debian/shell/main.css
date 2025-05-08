@@ -1,0 +1,8 @@
+@import url(./styles/colors.css);
+
+* {
+    all: unset;
+    color: var(--foreground);
+    font-family: "Lilex Nerd Font Mono";
+    font-size: 14px;
+}
