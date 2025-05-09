@@ -1,0 +1,9 @@
+#bar {
+    background-color: var(--background);
+    padding: 6px;
+    border: 3px solid var(--foreground);
+}
+
+center-box {
+    padding: 10px;
+}

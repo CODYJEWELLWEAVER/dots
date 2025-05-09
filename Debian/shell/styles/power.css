@@ -1,0 +1,31 @@
+#power-menu-box {
+    background-color: var(--background);
+    padding: 20px;
+    margin-top: 5px;
+    border: 3px solid var(--foreground);
+}
+
+#power-menu-toggle {
+    padding-right: 10px;
+}
+
+#power-menu-toggle-label {
+    font-size: 30px;
+    margin-right: 5px;
+    min-width: 40px;
+}
+
+.power-menu-button {
+    border: 3px solid var(--foreground);
+    margin: 5px;
+    box-shadow: 5px 5px var(--background-alt);
+}
+
+.power-menu-label {
+    font-weight: bolder;
+    padding: 10px;
+}
+
+.power-menu-button:hover {
+    background-color: var(--background-alt);
+}
