@@ -4,10 +4,9 @@ from fabric.widgets.centerbox import CenterBox
 from fabric.widgets.button import Button
 from fabric.widgets.label import Label
 
-from util.ui import add_hover_cursor, toggle_visibility
+from util.ui import add_hover_cursor, toggle_visible
 
 from modules.power import PowerMenu
-from gi.repository import Gdk
 
 """
 Status bar for shell.
@@ -24,8 +23,10 @@ class Bar(Window):
             **kwargs
         )
 
+
         self.date_time = DateTime()
         self.power_menu = PowerMenu()
+
 
         # Toggle power menu
         self.power_menu_toggle_label = Label(
@@ -35,11 +36,13 @@ class Bar(Window):
         self.power_menu_toggle = Button(
             name="power-menu-toggle",
             child=self.power_menu_toggle_label,
-            on_clicked=lambda *_: toggle_visibility(self.power_menu)
+            on_clicked=lambda *_: toggle_visible(self.power_menu)
         )
+
 
         add_hover_cursor(self.date_time)
         add_hover_cursor(self.power_menu_toggle)
+
 
         self.children = CenterBox(
             center_children=self.date_time,
