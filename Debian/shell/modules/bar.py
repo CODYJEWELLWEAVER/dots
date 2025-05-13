@@ -4,9 +4,12 @@ from fabric.widgets.centerbox import CenterBox
 from fabric.widgets.button import Button
 from fabric.widgets.label import Label
 
+from gi.repository import Playerctl, GLib
+
 from util.ui import add_hover_cursor, toggle_visible
 
 from modules.power import PowerMenu
+from modules.media import Media
 
 """
 Status bar for shell.
@@ -23,9 +26,12 @@ class Bar(Window):
             **kwargs
         )
 
+        player_manager = Playerctl.PlayerManager()
+
 
         self.date_time = DateTime()
         self.power_menu = PowerMenu()
+        self.media = Media(player_manager)
 
 
         # Toggle power menu
@@ -45,6 +51,7 @@ class Bar(Window):
 
 
         self.children = CenterBox(
+            start_children=self.media,
             center_children=self.date_time,
             end_children=self.power_menu_toggle,
         )

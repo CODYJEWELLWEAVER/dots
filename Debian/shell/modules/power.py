@@ -62,7 +62,7 @@ class PowerMenu(Window):
         self.reboot_button = Button(
             child=self.reboot_label,
             style_classes="power-menu-button",
-            on_clicked=lambda *_: toggle_visible(self.reboot_dialog)
+            on_clicked=self.show_reboot_dialog
         )
 
         
@@ -73,7 +73,7 @@ class PowerMenu(Window):
         self.suspend_button = Button(
             child=self.suspend_label,
             style_classes="power-menu-button",
-            on_clicked=lambda *_: toggle_visible(self.suspend_dialog)
+            on_clicked=self.show_suspend_dialog
         )
 
 
@@ -97,6 +97,16 @@ class PowerMenu(Window):
 
         # close menu when kb focus is lost
         add_auto_close(self)
+
+
+    def show_reboot_dialog(self, *args):
+        self.suspend_dialog.set_visible(False) # close suspend dialog if open
+        toggle_visible(self.reboot_dialog)
+
+
+    def show_suspend_dialog(self, *args):
+        self.reboot_dialog.set_visible(False) # close reboot dialog if open
+        toggle_visible(self.suspend_dialog)
 
 
     def lock_screen(self, *args):

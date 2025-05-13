@@ -1,0 +1,17 @@
+#media {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+#playback-status {
+    font-size: 30px;
+    padding-right: 10px;
+}
+
+#media-artist {
+    padding-right: 10px;
+}
+
+#output-device {
+    font-size: 30px;
+}
