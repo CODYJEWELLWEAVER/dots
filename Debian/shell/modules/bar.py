@@ -22,9 +22,10 @@ class Bar(Window):
             layer="top",
             anchor="left top right",
             exclusivity="auto",
-            margin='20px 20px 0px 20px',
+            margin='10px 20px 0px 20px',
             **kwargs
         )
+
 
         player_manager = Playerctl.PlayerManager()
 
@@ -34,7 +35,6 @@ class Bar(Window):
         self.media = Media(player_manager)
 
 
-        # Toggle power menu
         self.power_menu_toggle_label = Label(
             name="power-menu-toggle-label",
             label=""

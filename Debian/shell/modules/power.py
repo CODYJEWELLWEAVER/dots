@@ -21,7 +21,6 @@ class PowerMenu(Window):
             exclusivity="none",
             keyboard_mode="on-demand",
             visible=False,
-            margin='0px 20px 0px 0px',
             **kwargs
         )
         
@@ -53,6 +52,7 @@ class PowerMenu(Window):
             style_classes="power-menu-button",
             on_clicked=self.lock_screen
         )
+        add_hover_cursor(self.lock_button)
 
         
         self.reboot_label = Label(
@@ -64,6 +64,7 @@ class PowerMenu(Window):
             style_classes="power-menu-button",
             on_clicked=self.show_reboot_dialog
         )
+        add_hover_cursor(self.reboot_button)
 
         
         self.suspend_label = Label(
@@ -75,11 +76,6 @@ class PowerMenu(Window):
             style_classes="power-menu-button",
             on_clicked=self.show_suspend_dialog
         )
-
-
-        # Add dynamic cursor behavior to power options
-        add_hover_cursor(self.lock_button)
-        add_hover_cursor(self.reboot_button)
         add_hover_cursor(self.suspend_button)
 
 
@@ -95,7 +91,7 @@ class PowerMenu(Window):
         ]
 
 
-        # close menu when kb focus is lost
+        # close options menu when kb focus is lost
         add_auto_close(self)
 
 

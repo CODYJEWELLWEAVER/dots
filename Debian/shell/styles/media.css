@@ -5,13 +5,32 @@
 
 #playback-status {
     font-size: 30px;
-    padding-right: 10px;
 }
 
-#media-artist {
+#info-box {
+    padding-left: 10px;
     padding-right: 10px;
 }
 
 #output-device {
     font-size: 30px;
+}
+
+#media-info-panel {
+    background-color: var(--background);
+    border: 3px solid var(--foreground);
+}
+
+#media-info-panel-box {
+    padding: 20px;
+    min-width: 300px;
+}
+
+.media-info-panel-text {
+    font-weight: bolder;
+}
+
+#media-art {
+    box-shadow: 5px 5px var(--background-alt);
+    border-radius: 0px;
 }
