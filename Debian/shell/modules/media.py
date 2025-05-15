@@ -5,10 +5,10 @@ from fabric.widgets.button import Button
 from fabric.audio.service import Audio
 from fabric.widgets.wayland import WaylandWindow as Window
 from fabric.widgets.image import Image
-from fabric import Fabricator
+from fabric.widgets.widget import Widget
 from fabric.utils import truncate, bulk_connect
 
-from gi.repository import Playerctl, GdkPixbuf
+from gi.repository import Playerctl, GdkPixbuf, Gtk
 
 import pulsectl
 
@@ -29,11 +29,13 @@ class Media(Box):
         )
 
 
-        self.PLAYING_LABEL = ""
-        self.PAUSED_LABEL = ""
-        self.HEADPHONES_LABEL = ""
+        self.PLAYING_LABEL = "󰏤"
+        self.PAUSED_LABEL = "󰐊"
+        self.HEADPHONES_LABEL = "󰋋"
         self.SPEAKER_LABEL = "󰓃"
-        self.MUTED_LABEL = ""
+        self.MUTED_LABEL = "󰝟"
+        self.PREV_TRACK_LABEL = "󰒮"
+        self.NEXT_TRACK_LABEL = "󰒭"
 
 
         self.manager = manager
@@ -42,15 +44,47 @@ class Media(Box):
         self.media_panel = MediaPanel()
 
 
-        self.status = Label(
-            name="playback-status"
+        self.output_device_label = Label(
+            style_classes=["text-icon", "media-controls"]
         )
-        self.playback_control = Button(
-            child=self.status,
+        self.output_control = Button(
+            child=self.output_device_label,
+            on_clicked=self.swap_audio_sink
+        )
+        add_hover_cursor(self.output_control)
+
+        
+        self.prev_track_label = Label(
+            style_classes=["text-icon", "media-controls"],
+            label = self.PREV_TRACK_LABEL
+        )
+        self.prev_track_control = Button(
+            child=self.prev_track_label,
+            on_clicked=self.skip_to_prev_track
+        )
+        add_hover_cursor(self.prev_track_control)
+
+
+        self.play_label = Label(
+            style_classes=["text-icon", "media-controls"],
+            label=self.PAUSED_LABEL
+        )
+        self.play_control = Button(
+            child=self.play_label,
             on_clicked=self.toggle_play_pause,
-            visible=False,
         )
-        add_hover_cursor(self.playback_control)
+        add_hover_cursor(self.play_control)
+
+
+        self.next_track_label = Label(
+            style_classes=["text-icon", "media-controls"],
+            label=self.NEXT_TRACK_LABEL
+        )
+        self.next_track_control = Button(
+            child=self.next_track_label,
+            on_clicked=self.skip_to_next_track
+        )
+        add_hover_cursor(self.next_track_control)
 
 
         self.title = Label(
@@ -84,20 +118,12 @@ class Media(Box):
         )
 
 
-        self.output_device = Label(
-            name="output-device"
-        )
-        self.output_control = Button(
-            child=self.output_device,
-            on_clicked=self.swap_audio_sink
-        )
-        add_hover_cursor(self.output_control)
-
-
         self.children = [
-            self.playback_control,
-            self.media_info,
             self.output_control,
+            self.media_info,
+            self.prev_track_control,
+            self.play_control,
+            self.next_track_control,
         ]
 
 
@@ -111,10 +137,22 @@ class Media(Box):
         self.audio.connect("speaker_changed", self.on_speaker_changed)
 
 
-    def toggle_play_pause(self, button):
+    def toggle_play_pause(self, *args):
         top_player = self.manager.props.players[0]
         if top_player:
             top_player.play_pause()
+
+
+    def skip_to_prev_track(self, *args):
+        top_player = self.manager.props.players[0]
+        if top_player:
+            top_player.previous()
+
+
+    def skip_to_next_track(self, *args):
+        top_player = self.manager.props.players[0]
+        if top_player:
+            top_player.next()
             
 
     def init_player(self, name):
@@ -128,19 +166,18 @@ class Media(Box):
 
     def on_play(self, player, status, manager):
         # show playback control button when first player apears
-        self.playback_control.set_property("visible", True)
-        self.status.set_property("label", self.PLAYING_LABEL)
+        self.play_label.set_property("label", self.PLAYING_LABEL)
 
 
     def on_pause(self, player, status, manager):
-        self.status.set_property("label", self.PAUSED_LABEL)
+        self.play_label.set_property("label", self.PAUSED_LABEL)
 
 
     def on_metadata(self, player, metadata, manager):
         """
         Update media info on bar and on
         """
-        if "xesam:title" in metadata.keys():
+        if "xesam:title" in metadata.keys() and metadata['xesam:title'] != "":
             title_str = metadata["xesam:title"]
             self.title.set_property("label", truncate(title_str, 24))
             self.title.set_property("visible", True)
@@ -150,12 +187,16 @@ class Media(Box):
 
             self.media_info.set_property("visible", True)
         else:
-            self.title.set_property("visible", False)
+            self.title_label.set_property("visible", False)
             self.media_panel.title.set_property("visible", False)
 
-        if "xesam:artist" in metadata.keys():
+        if "xesam:artist" in metadata.keys() and metadata['xesam:artist'] != "":
             artist_str = metadata["xesam:artist"][0]
-            self.artist.set_property("label", artist_str)
+            # add space and comma between title and artist when title is visible
+            if self.title.get_property("visible"):
+                self.artist.set_property("label", f", {artist_str}")
+            else:
+                self.artist.set_property("label", artist_str)
             self.artist.set_property("visible", True)
 
             self.media_panel.artist.set_property("label", artist_str)
@@ -188,11 +229,11 @@ class Media(Box):
 
     def on_speaker_changed(self, service):
         if service.speaker.muted:
-            self.output_device.set_property("label", self.MUTED_LABEL)
+            self.output_device_label.set_property("label", self.MUTED_LABEL)
         elif service.speaker.name in HEADPHONES:
-            self.output_device.set_property("label", self.HEADPHONES_LABEL)
+            self.output_device_label.set_property("label", self.HEADPHONES_LABEL)
         else:
-            self.output_device.set_property("label", self.SPEAKER_LABEL)
+            self.output_device_label.set_property("label", self.SPEAKER_LABEL)
 
     
     def swap_audio_sink(self, button):
@@ -266,7 +307,7 @@ class MediaPanel(Window):
                 self.art,
                 self.title,
                 self.artist,
-                self.album,
+                self.album
             ]
         )
 

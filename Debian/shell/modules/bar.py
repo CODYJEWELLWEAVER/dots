@@ -3,8 +3,9 @@ from fabric.widgets.datetime import DateTime
 from fabric.widgets.centerbox import CenterBox
 from fabric.widgets.button import Button
 from fabric.widgets.label import Label
+from fabric.widgets.shapes import Corner
 
-from gi.repository import Playerctl, GLib
+from gi.repository import Playerctl
 
 from util.ui import add_hover_cursor, toggle_visible
 
@@ -37,6 +38,7 @@ class Bar(Window):
 
         self.power_menu_toggle_label = Label(
             name="power-menu-toggle-label",
+            style_classes="text-icon",
             label=""
         )
         self.power_menu_toggle = Button(
@@ -49,9 +51,8 @@ class Bar(Window):
         add_hover_cursor(self.date_time)
         add_hover_cursor(self.power_menu_toggle)
 
-
         self.children = CenterBox(
             start_children=self.media,
             center_children=self.date_time,
-            end_children=self.power_menu_toggle,
+            end_children=self.power_menu_toggle
         )
