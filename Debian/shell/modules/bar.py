@@ -1,14 +1,7 @@
 from fabric.widgets.wayland import WaylandWindow as Window
 from fabric.widgets.datetime import DateTime
-from fabric.widgets.button import Button
-from fabric.widgets.label import Label
 
-from util.ui import add_hover_cursor, toggle_visible
-from util.helpers import get_icon_pixbuff
-from util.icons import ICONS
-
-from modules.power import PowerMenu
-from modules.media import Media
+from util.ui import add_hover_cursor
 
 """
 Status bar for shell.

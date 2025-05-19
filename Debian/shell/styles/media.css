@@ -3,6 +3,10 @@
     border: 3px solid var(--foreground);
 }
 
+.media-control-icon {
+    padding: 10px;
+}
+
 #info-box {
     padding-left: 10px;
     padding-right: 10px;
