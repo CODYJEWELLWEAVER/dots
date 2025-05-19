@@ -1,8 +1,6 @@
-#bar {
+#date-time {
     background-color: var(--background);
     border: 3px solid var(--foreground);
-}
-
-center-box {
-    padding: 10px;
+    padding-right: 10px;
+    padding-left: 10px;
 }

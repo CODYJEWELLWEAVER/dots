@@ -2,9 +2,13 @@ from fabric.widgets.wayland import WaylandWindow as Window
 from fabric.widgets.label import Label
 from fabric.widgets.button import Button
 from fabric.widgets.box import Box
+from fabric.widgets.image import Image
 from fabric.utils import exec_shell_command
 
 from util.ui import add_hover_cursor, add_auto_close, toggle_visible
+from util.icons import ICONS
+
+from config.icons import LARGE_ICON_SIZE
 
 
 """
@@ -12,18 +16,48 @@ Module for displaying power options.
 """
 
 
+class PowerControl(Window):
+    def __init__(self, **kwargs):
+        super().__init__(
+            name="power-menu",
+            anchor="right top",
+            layer="top",
+            exclusivity="normal",
+            margin="10px 20px 0px 0px",
+            keyboard_mode="on-demand",
+            **kwargs
+        )
+
+
+        self.power_menu = PowerMenu()
+
+
+        self.power_menu_toggle_label = Label(
+            name="power-menu-toggle-label",
+            style_classes="text-icon",
+            markup=ICONS["power"]
+        )
+        self.power_menu_toggle = Button(
+            name="power-menu-toggle",
+            child=self.power_menu_toggle_label,
+            on_clicked=lambda *_: toggle_visible(self.power_menu)
+        )
+        add_hover_cursor(self.power_menu_toggle)
+
+        
+        self.children = self.power_menu_toggle
+
+
 class PowerMenu(Window):
     def __init__(self, **kwargs):
         super().__init__(
             name="power-menu",
-            anchor="top right",
+            anchor="right top",
             layer="top",
             exclusivity="none",
-            keyboard_mode="on-demand",
             visible=False,
             **kwargs
         )
-        
 
         # Container for power options menu
         self.menu = Box(
@@ -43,12 +77,13 @@ class PowerMenu(Window):
         )
 
         
-        self.lock_label = Label(
-            label="Lock",
-            style_classes="power-menu-label",
+        self.lock_icon = Image(
+            icon_name="system-lock-screen-symbolic",
+            icon_size=LARGE_ICON_SIZE,
+            style_classes="power-menu-icon"
         )
         self.lock_button = Button(
-            child=self.lock_label,
+            child=self.lock_icon,
             style_classes="power-menu-button",
             on_clicked=self.lock_screen
         )
@@ -84,15 +119,8 @@ class PowerMenu(Window):
             self.reboot_button,
             self.suspend_button
         ]
-        self.children = [
-            self.menu, 
-            self.reboot_dialog,
-            self.suspend_dialog
-        ]
-
-
-        # close options menu when kb focus is lost
-        add_auto_close(self)
+        
+        self.children = self.menu
 
 
     def show_reboot_dialog(self, *args):
@@ -118,7 +146,7 @@ class PowerMenu(Window):
 
 
 class ConfirmationDialog(Window):
-    """ Simple window to confirm action. """
+    """ Simple window to confirm action. """ 
     def __init__(self, prompt, action_callback, **kwargs):
         super().__init__(
             style_classes="confirm-dialog",
@@ -188,4 +216,4 @@ class ConfirmationDialog(Window):
             self.prompt_label,
             self.buttons_box
         ]
-        self.children = self.dialog
+        self.children = self.dialog 

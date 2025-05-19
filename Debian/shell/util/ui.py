@@ -23,5 +23,5 @@ def add_auto_close(widget):
     """
     Hides widget when keyboard-focus leaves window.
     """
-    widget.add_events(Gdk.EventMask.FOCUS_CHANGE_MASK)
-    widget.connect("focus-out-event", lambda w, event: w.set_visible(False))
+    widget.add_events(Gdk.EventMask.KEY_PRESS_MASK)
+    widget.connect("key-press-event", lambda w, event: print(event))

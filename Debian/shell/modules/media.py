@@ -5,26 +5,28 @@ from fabric.widgets.button import Button
 from fabric.audio.service import Audio
 from fabric.widgets.wayland import WaylandWindow as Window
 from fabric.widgets.image import Image
-from fabric.widgets.widget import Widget
 from fabric.utils import truncate, bulk_connect
 
-from gi.repository import Playerctl, GdkPixbuf, Gtk
+from gi.repository import Playerctl, GdkPixbuf
 
 import pulsectl
 
 from util.ui import add_hover_cursor, toggle_visible
 from util.helpers import get_file_path_from_mpris_url
-from config.media import HEADPHONES, AUDIO_SINKS
+from config.media import HEADPHONES
 
 
 """ Media control and info module. """
 
 
-class Media(Box):
+class Media(Window):
     def __init__(self, manager, **kwargs):
         super().__init__(
             name="media",
-            orientation="h",
+            anchor="top left",
+            exclusivity="normal",
+            layer="top",
+            margin="10px 0px 0px 20px",
             kwargs=kwargs
         )
 
@@ -88,10 +90,10 @@ class Media(Box):
 
 
         self.title = Label(
-            name="media-title",
+            style_classes="info-box-text",
         )
         self.artist = Label(
-            name="media-artist",
+            style_classes="info-box-text",
         )
         self.info_box = Box(
             name="info-box",
@@ -118,13 +120,17 @@ class Media(Box):
         )
 
 
-        self.children = [
-            self.output_control,
-            self.media_info,
-            self.prev_track_control,
-            self.play_control,
-            self.next_track_control,
-        ]
+        self.children = Box(
+            spacing=10,
+            orientation="h",
+            children=[
+                self.media_info,
+                self.output_control,
+                self.prev_track_control,
+                self.play_control,
+                self.next_track_control
+            ]
+        ) 
 
 
         for name in manager.props.player_names:
@@ -175,9 +181,11 @@ class Media(Box):
 
     def on_metadata(self, player, metadata, manager):
         """
-        Update media info on bar and on
+        Update media info on bar and on media panel
         """
         if "xesam:title" in metadata.keys() and metadata['xesam:title'] != "":
+            self.media_info.set_property("visible", True)
+
             title_str = metadata["xesam:title"]
             self.title.set_property("label", truncate(title_str, 24))
             self.title.set_property("visible", True)
@@ -187,10 +195,12 @@ class Media(Box):
 
             self.media_info.set_property("visible", True)
         else:
-            self.title_label.set_property("visible", False)
+            self.title.set_property("visible", False)
             self.media_panel.title.set_property("visible", False)
 
-        if "xesam:artist" in metadata.keys() and metadata['xesam:artist'] != "":
+        if "xesam:artist" in metadata.keys() and metadata['xesam:artist'] != [""]:
+            self.media_info.set_property("visible", True)
+
             artist_str = metadata["xesam:artist"][0]
             # add space and comma between title and artist when title is visible
             if self.title.get_property("visible"):
@@ -206,6 +216,10 @@ class Media(Box):
         else:
             self.artist.set_property("visible", False)
             self.media_panel.artist.set_property("visible", False)
+
+        if "xesam:title" in metadata.keys() and metadata['xesam:title'] == "" and \
+                "xesam:artist" in metadata.keys() and metadata['xesam:artist'] == [""]:
+            self.media_info.set_property("visible", False)
 
         if "xesam:album" in metadata.keys() and metadata["xesam:album"] != "":
             self.media_panel.album.set_property("label", metadata["xesam:album"])
@@ -239,16 +253,21 @@ class Media(Box):
     def swap_audio_sink(self, button):
         """ 
         Changes audio output by rotating through the sinks
-        listed in config/media.py.
+        detected by pulse audio.
         """
+        sink_names = [sink.name for sink in self.pulse.sink_list()]
         default_sink = self.pulse.sink_default_get()
-        default_sink_idx = AUDIO_SINKS.index(default_sink.name)
+        default_sink_idx = sink_names.index(default_sink.name)
 
-        new_sink_idx = (default_sink_idx + 1) % len(AUDIO_SINKS)
-        new_sink_name = AUDIO_SINKS[new_sink_idx]
+        new_sink_idx = (default_sink_idx + 1) % len(sink_names)
+        new_sink_name = sink_names[new_sink_idx]
 
-        new_sink = self.pulse.get_sink_by_name(new_sink_name)
-        self.pulse.sink_default_set(new_sink)
+        try:
+            new_sink = self.pulse.get_sink_by_name(new_sink_name)
+            self.pulse.sink_default_set(new_sink)
+        except:
+            pass
+            
 
 
     def show_media_info_panel(self, *args):

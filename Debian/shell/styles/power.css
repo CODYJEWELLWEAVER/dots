@@ -8,11 +8,13 @@
 }
 
 #power-menu-toggle {
-    padding-right: 15px;
+    background-color: var(--background);
+    border: 3px solid var(--foreground);
+    border-radius: 100%;
 }
 
-#power-menu-toggle-label {
-    margin-right: 5px;
+.power-menu-icon {
+    padding: 10px;
 }
 
 .power-menu-button {
