@@ -3,12 +3,15 @@ from fabric.widgets.label import Label
 from fabric.widgets.button import Button
 from fabric.widgets.box import Box
 from fabric.widgets.image import Image
+from fabric.widgets.revealer import Revealer
 from fabric.utils import exec_shell_command
 
 from config.icons import ICONS
-from util.ui import add_hover_cursor, add_auto_close, toggle_visible
+from util.ui import add_hover_cursor, toggle_visible
 
 from config.icons import MEDIUM_ICON_SIZE, SMALL_ICON_SIZE
+
+from gi.repository import Gtk
 
 
 """
@@ -102,6 +105,7 @@ class PowerMenu(Window):
         )
         add_hover_cursor(self.reboot_button)
 
+
         #TODO: Replace suspend option with shutdown
         self.suspend_icon = Image(
             icon_name=ICONS["power"],
@@ -121,6 +125,7 @@ class PowerMenu(Window):
             self.reboot_button,
             self.suspend_button
         ]
+
         
         self.children = self.menu
 
@@ -190,10 +195,11 @@ class ConfirmationDialog(Window):
             style_classes="power-menu-label"
         )
         self.yes_button = Button(
-            style_classes="power-menu-button",
+            style_classes="confirmation-menu-button",
             child=self.yes_label,
             on_clicked=action_callback
         )
+        add_hover_cursor(self.yes_button)
 
 
         self.no_label = Label(
@@ -201,20 +207,17 @@ class ConfirmationDialog(Window):
             style_classes="power-menu-label"
         )
         self.no_button = Button(
-            style_classes="power-menu-button",
+            style_classes="confirmation-menu-button",
             child=self.no_label,
             on_clicked=lambda *_: toggle_visible(self)
         )
+        add_hover_cursor(self.no_button)
 
 
         self.buttons_box.children = [
             self.yes_button,
             self.no_button
         ]
-
-
-        add_hover_cursor(self.yes_button)
-        add_hover_cursor(self.no_button)
 
 
         self.dialog.children = [

@@ -5,6 +5,8 @@ from fabric.widgets.button import Button
 from fabric.audio.service import Audio
 from fabric.widgets.wayland import WaylandWindow as Window
 from fabric.widgets.image import Image
+from fabric.widgets.scale import Scale
+from fabric.core.fabricator import Fabricator
 from fabric.utils import truncate, bulk_connect
 
 from gi.repository import Playerctl, GdkPixbuf
@@ -37,9 +39,37 @@ class Media(Window):
         self.media_panel = MediaPanel()
 
 
-        """ self.output_device_label = Label(
-            style_classes=["text-icon", "media-controls"]
-        ) """
+        self.title = Label(
+            style_classes="info-box-text",
+        )
+        self.artist = Label(
+            style_classes="info-box-text",
+        )
+        self.info_box = Box(
+            name="info-box",
+            children=[
+                self.title,
+                self.artist
+            ]
+        )
+        self.media_info = EventBox(
+            name="media-info",
+            orientation="h",
+            child=self.info_box,
+            visible=False,
+            events=["enter-notify", "leave-notify"]
+        )
+
+
+        bulk_connect(
+            self.media_info, 
+            {
+                "enter-notify-event": self.show_media_info_panel,
+                "leave-notify-event": self.hide_media_info_panel
+            }
+        )
+
+
         self.output_icon = Image(
             icon_name=ICONS["speaker"],
             icon_size=SMALL_ICON_SIZE,
@@ -88,34 +118,18 @@ class Media(Window):
         add_hover_cursor(self.next_track_control)
 
 
-        self.title = Label(
-            style_classes="info-box-text",
+        self.volume_scale = Scale(
+            name="volume-scale",
+            increments=(0.01, 0.1),
+            h_align="center"
         )
-        self.artist = Label(
-            style_classes="info-box-text",
-        )
-        self.info_box = Box(
-            name="info-box",
-            children=[
-                self.title,
-                self.artist
-            ]
-        )
-        self.media_info = EventBox(
-            name="media-info",
-            orientation="h",
-            child=self.info_box,
-            visible=False,
-            events=["enter-notify", "leave-notify"]
-        )
+        self.volume_scale.connect("change-value", self.on_volume_slider_value_change)
 
 
-        bulk_connect(
-            self.media_info, 
-            {
-                "enter-notify-event": self.show_media_info_panel,
-                "leave-notify-event": self.hide_media_info_panel
-            }
+        self.pulse_volume_fab = Fabricator(
+            poll_from=self.get_pulse_volume,
+            interval=100,
+            on_changed=self.set_volume_scale_value
         )
 
 
@@ -127,7 +141,8 @@ class Media(Window):
                 self.output_control,
                 self.prev_track_control,
                 self.play_control,
-                self.next_track_control
+                self.next_track_control,
+                self.volume_scale
             ]
         ) 
 
@@ -140,6 +155,10 @@ class Media(Window):
 
 
         self.audio.connect("speaker_changed", self.on_speaker_changed)
+
+
+    def set_volume_scale_value(self, fabricator, value):
+        self.volume_scale.value = value
 
 
     def toggle_play_pause(self, *args):
@@ -170,12 +189,11 @@ class Media(Window):
 
 
     def on_play(self, player, status, manager):
-        # show playback control button when first player apears
-        self.play_icon.set_property("icon_name", ICONS["play"])
+        self.play_icon.set_property("icon_name", ICONS["pause"])
 
 
     def on_pause(self, player, status, manager):
-        self.play_icon.set_property("icon_name", ICONS["pause"])
+        self.play_icon.set_property("icon_name", ICONS["play"])
 
 
     def on_metadata(self, player, metadata, manager):
@@ -266,7 +284,23 @@ class Media(Window):
             self.pulse.sink_default_set(new_sink)
         except:
             pass
-            
+
+
+    def on_volume_slider_value_change(self, widget, event, value):
+        if value < 0:
+            value = 0
+        elif value > 1:
+            value = 1
+
+        sink = self.pulse.sink_default_get()
+        sink_volume = sink.volume
+        sink_volume.value_flat = value
+        self.pulse.sink_volume_set(sink.index, sink_volume)
+
+
+    def get_pulse_volume(self, *args):
+        sink = self.pulse.sink_default_get()
+        return 0 if sink.mute else sink.volume.value_flat
 
 
     def show_media_info_panel(self, *args):

@@ -1,10 +1,9 @@
 #power-menu-box {
     background-color: var(--background);
-    padding: 20px;
+    padding: 5px;
     margin-top: 20px;
-    margin-right: 20px;
+    margin-right: 5px;
     border: 3px solid var(--foreground);
-    opacity: 0.95;
 }
 
 #power-menu-toggle {
@@ -20,7 +19,7 @@
 .power-menu-button {
     border: 3px solid var(--foreground);
     margin: 5px;
-    min-width: 100px;
+    border-radius: 100%;
 }
 
 .power-menu-label {
@@ -30,15 +29,27 @@
 
 .power-menu-button:hover {
     background-color: var(--background-alt);
-    box-shadow: 5px 5px var(--background-alt);
 }
 
 .confirm-dialog {
     background-color: var(--background);
     border: 3px solid var(--foreground);
-    opacity: 0.95;
 }
 
 .confirmation-menu {
     padding: 30px;
+}
+
+#revealer {
+    background-color: var(--background);
+}
+
+.confirmation-menu-button {
+    border: 3px solid var(--foreground);
+    margin: 5px;
+    min-width: 100px;
+}
+
+.confirmation-menu-button:hover {
+    background-color: var(--background-alt);
 }

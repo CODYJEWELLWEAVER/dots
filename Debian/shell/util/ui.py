@@ -4,6 +4,7 @@ from gi.repository import Gdk
 def add_hover_cursor(widget):
     """
     Changes cursor when hovering over widget and resets when moving away from widget.
+    Credit to https://github.com/Axenide for this.
     """
     widget.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK | Gdk.EventMask.LEAVE_NOTIFY_MASK)
     widget.connect("enter-notify-event", lambda w, event: w.get_window().set_cursor(
@@ -17,11 +18,3 @@ def toggle_visible(widget):
     """
     is_visible = widget.get_visible()
     widget.set_visible(not is_visible)
-
-
-def add_auto_close(widget):
-    """
-    Hides widget when keyboard-focus leaves window.
-    """
-    widget.add_events(Gdk.EventMask.KEY_PRESS_MASK)
-    widget.connect("key-press-event", lambda w, event: print(event))
