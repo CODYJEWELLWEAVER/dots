@@ -7,6 +7,8 @@ from fabric.widgets.wayland import WaylandWindow as Window
 from fabric.widgets.image import Image
 from fabric.widgets.scale import Scale
 from fabric.core.fabricator import Fabricator
+from fabric.widgets.circularprogressbar import CircularProgressBar
+from fabric.widgets.overlay import Overlay
 from fabric.utils import truncate, bulk_connect
 
 from gi.repository import Playerctl, GdkPixbuf
@@ -16,7 +18,7 @@ import pulsectl
 from util.ui import add_hover_cursor, toggle_visible
 from util.helpers import get_file_path_from_mpris_url
 from config.media import HEADPHONES
-from config.icons import ICONS, SMALL_ICON_SIZE
+import config.icons as icons
 
 
 """ Side Media control and info module. """
@@ -70,49 +72,42 @@ class Media(Window):
         )
 
 
-        self.output_icon = Image(
-            icon_name=ICONS["speaker"],
-            icon_size=SMALL_ICON_SIZE,
-            style_classes="media-control-icon"
-        )
         self.output_control = Button(
-            child=self.output_icon,
+            child=Label(
+                style_classes="media-control-icon",
+                markup=icons.speaker
+            ),
             on_clicked=self.swap_audio_sink
         )
         add_hover_cursor(self.output_control)
 
         
-        self.skip_prev_icon = Image(
-            icon_name=ICONS["skip-prev"],
-            icon_size=SMALL_ICON_SIZE,
-            style_classes="media-control-icon"
-        )
         self.prev_track_control = Button(
-            child=self.skip_prev_icon,
+            child=Label(
+                style_classes="media-control-icon",
+                markup=icons.skip_prev
+            ),
             on_clicked=self.skip_to_prev_track
         )
         add_hover_cursor(self.prev_track_control)
 
 
-        self.play_icon = Image(
-            icon_name=ICONS["play"],
-            icon_size=SMALL_ICON_SIZE,
-            style_classes="media-control-icon"
+        self.play_control_label = Label(
+            style_classes="media-control-icon",
+            markup=icons.play
         )
         self.play_control = Button(
-            child=self.play_icon,
+            child=self.play_control_label,
             on_clicked=self.toggle_play_pause,
         )
         add_hover_cursor(self.play_control)
 
 
-        self.skip_next_icon = Image(
-            icon_name=ICONS["skip-next"],
-            icon_size=SMALL_ICON_SIZE,
-            style_classes="media-control-icon"
-        )
         self.next_track_control = Button(
-            child=self.skip_next_icon,
+            child=Label(
+                style_classes="media-control-icon",
+                markup=icons.skip_next
+            ),
             on_clicked=self.skip_to_next_track
         )
         add_hover_cursor(self.next_track_control)
@@ -121,9 +116,10 @@ class Media(Window):
         self.volume_scale = Scale(
             name="volume-scale",
             increments=(0.01, 0.1),
-            h_align="center"
+            h_align="center",
         )
         self.volume_scale.connect("change-value", self.on_volume_slider_value_change)
+        add_hover_cursor(self.volume_scale)
 
 
         self.pulse_volume_fab = Fabricator(
@@ -142,7 +138,7 @@ class Media(Window):
                 self.prev_track_control,
                 self.play_control,
                 self.next_track_control,
-                self.volume_scale
+                self.volume_scale   
             ]
         ) 
 
@@ -189,11 +185,21 @@ class Media(Window):
 
 
     def on_play(self, player, status, manager):
-        self.play_icon.set_property("icon_name", ICONS["pause"])
+        label = Label(
+            style_classes="media-control-icon",
+            markup=icons.pause
+        )
+
+        self.play_control.children = label
 
 
     def on_pause(self, player, status, manager):
-        self.play_icon.set_property("icon_name", ICONS["play"])
+        label = Label(
+            style_classes="media-control-icon",
+            markup=icons.play
+        )
+
+        self.play_control.children = label
 
 
     def on_metadata(self, player, metadata, manager):
@@ -260,11 +266,16 @@ class Media(Window):
 
     def on_speaker_changed(self, service):
         if service.speaker.name in HEADPHONES:
-            new_icon_name = ICONS["headphones"]
+            icon = icons.headphones
         else:
-            new_icon_name = ICONS["speaker"]
+            icon = icons.speaker
 
-        self.output_icon.set_property("icon_name", new_icon_name)
+        label = Label(
+            style_classes="media-control-icon",
+            markup=icon
+        )
+
+        self.output_control.children = label
 
     
     def swap_audio_sink(self, button):

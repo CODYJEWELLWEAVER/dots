@@ -11,7 +11,7 @@ class StatusBar(Window):
     def __init__(self, **kwargs):
         super().__init__(
             name="bar",
-            layer="overlay",
+            layer="top",
             anchor="top center",
             exclusivity="auto",
             margin='10px 0px 0px 0px',

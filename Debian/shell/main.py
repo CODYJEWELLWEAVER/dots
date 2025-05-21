@@ -18,8 +18,8 @@ if __name__ == "__main__":
     player_manager = Playerctl.PlayerManager()
 
     media = Media(player_manager)
-    bar = StatusBar()
     power = PowerControl()
+    bar = StatusBar()
 
     app = Application(APP_NAME, media, bar, power, open_inspector=False)
 

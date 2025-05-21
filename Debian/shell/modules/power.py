@@ -6,10 +6,8 @@ from fabric.widgets.image import Image
 from fabric.widgets.revealer import Revealer
 from fabric.utils import exec_shell_command
 
-from config.icons import ICONS
+import config.icons as icons
 from util.ui import add_hover_cursor, toggle_visible
-
-from config.icons import MEDIUM_ICON_SIZE, SMALL_ICON_SIZE
 
 from gi.repository import Gtk
 
@@ -35,14 +33,12 @@ class PowerControl(Window):
         self.power_menu = PowerMenu()
 
 
-        self.power_icon = Image(
-            icon_name=ICONS["power"],
-            icon_size=SMALL_ICON_SIZE,
-            style_classes="power-menu-icon"
-        )
         self.power_menu_toggle = Button(
             name="power-menu-toggle",
-            child=self.power_icon,
+            child=Label(
+                style_classes="power-menu-toggle-icon",
+                markup=icons.power
+            ),
             on_clicked=lambda *_: toggle_visible(self.power_menu)
         )
         add_hover_cursor(self.power_menu_toggle)
@@ -79,41 +75,35 @@ class PowerMenu(Window):
             self.suspend_system
         )
 
-        
-        self.lock_icon = Image(
-            icon_name=ICONS["lock"],
-            icon_size=MEDIUM_ICON_SIZE,
-            style_classes="power-menu-icon"
-        )
+
         self.lock_button = Button(
-            child=self.lock_icon,
+            child=Label(
+                style_classes="power-menu-icon",
+                markup=icons.lock
+            ),
             style_classes="power-menu-button",
             on_clicked=self.lock_screen
         )
         add_hover_cursor(self.lock_button)
 
-        
-        self.reboot_icon = Image(
-            icon_name=ICONS["reboot"],
-            icon_size=MEDIUM_ICON_SIZE,
-            style_classes="power-menu-icon"
-        )
+
         self.reboot_button = Button(
-            child=self.reboot_icon,
+            child=Label(
+                style_classes="power-menu-icon",
+                markup=icons.reboot
+            ),
             style_classes="power-menu-button",
             on_clicked=self.show_reboot_dialog
         )
         add_hover_cursor(self.reboot_button)
 
 
-        #TODO: Replace suspend option with shutdown
-        self.suspend_icon = Image(
-            icon_name=ICONS["power"],
-            icon_size=MEDIUM_ICON_SIZE,
-            style_classes="power-menu-icon"
-        )
+        #TODO: Add shutdown option
         self.suspend_button = Button(
-            child=self.suspend_icon,
+            child=Label(
+                style_classes="power-menu-icon",
+                markup=icons.suspend
+            ),
             style_classes="power-menu-button",
             on_clicked=self.show_suspend_dialog
         )

@@ -12,8 +12,10 @@
     border-radius: 100%;
 }
 
-.power-menu-icon {
-    padding: 10px;
+.power-menu-toggle-icon {
+    font-family: tabler-icons;
+    font-size: 30px;
+    padding: 4px;
 }
 
 .power-menu-button {
@@ -52,4 +54,10 @@
 
 .confirmation-menu-button:hover {
     background-color: var(--background-alt);
+}
+
+.power-menu-icon {
+    font-family: tabler-icons;
+    font-size: 40px;
+    padding: 4px;
 }

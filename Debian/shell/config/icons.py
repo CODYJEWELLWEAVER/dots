@@ -1,17 +1,21 @@
-SMALL_ICON_SIZE = 20
-MEDIUM_ICON_SIZE = 30
-LARGE_ICON_SIZE = 40
+# Tabler Font Icons
 
+power: str = "&#xeb0d;"
 
-ICONS = {
-    "lock": "system-lock-screen-symbolic",
-    "reboot": "system-reboot-symbolic",
-    "power": "system-shutdown-symbolic",
-    "play": "media-playback-start-symbolic",
-    "pause": "media-playback-pause-symbolic",
-    "skip-next": "media-skip-forward-symbolic",
-    "skip-prev": "media-skip-backward-symbolic",
-    "speaker": "audio-speakers-symbolic",
-    "headphones": "audio-headphones-symbolic",
-    "muted": "audio-headphones-symbolic",
-}
+lock: str = "&#xeae2;"
+
+reboot: str = "&#xeb9b;"
+
+suspend: str = "&#xf868;"
+
+speaker: str = "&#x10045;"
+
+headphones: str = "&#xfa3c;"
+
+skip_prev: str = "&#xf697;"
+
+play: str = "&#xf691;"
+
+pause: str = "&#xf690;"
+
+skip_next: str = "&#xf696;"
