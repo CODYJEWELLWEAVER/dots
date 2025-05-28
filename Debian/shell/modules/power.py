@@ -2,14 +2,10 @@ from fabric.widgets.wayland import WaylandWindow as Window
 from fabric.widgets.label import Label
 from fabric.widgets.button import Button
 from fabric.widgets.box import Box
-from fabric.widgets.image import Image
-from fabric.widgets.revealer import Revealer
 from fabric.utils import exec_shell_command
 
 import config.icons as icons
 from util.ui import add_hover_cursor, toggle_visible
-
-from gi.repository import Gtk
 
 
 """
@@ -17,14 +13,10 @@ Module for displaying power options.
 """
 
 
-class PowerControl(Window):
+class PowerControl(Box):
     def __init__(self, **kwargs):
         super().__init__(
             name="power-menu",
-            anchor="right top",
-            layer="top",
-            exclusivity="normal",
-            margin="10px 20px 0px 0px",
             keyboard_mode="on-demand",
             **kwargs
         )
@@ -98,7 +90,6 @@ class PowerMenu(Window):
         add_hover_cursor(self.reboot_button)
 
 
-        #TODO: Add shutdown option
         self.suspend_button = Button(
             child=Label(
                 style_classes="power-menu-icon",
@@ -108,6 +99,9 @@ class PowerMenu(Window):
             on_clicked=self.show_suspend_dialog
         )
         add_hover_cursor(self.suspend_button)
+
+
+        #TODO: Add shutdown option
 
 
         self.menu.children = [
@@ -180,25 +174,23 @@ class ConfirmationDialog(Window):
         )
 
 
-        self.yes_label = Label(
-            "Yes",
-            style_classes="power-menu-label"
-        )
         self.yes_button = Button(
             style_classes="confirmation-menu-button",
-            child=self.yes_label,
+            child=Label(
+                "Yes",
+                style_classes="power-menu-label"
+            ),
             on_clicked=action_callback
         )
         add_hover_cursor(self.yes_button)
 
 
-        self.no_label = Label(
-            "No",
-            style_classes="power-menu-label"
-        )
         self.no_button = Button(
             style_classes="confirmation-menu-button",
-            child=self.no_label,
+            child=Label(
+                "No",
+                style_classes="power-menu-label"
+            ),
             on_clicked=lambda *_: toggle_visible(self)
         )
         add_hover_cursor(self.no_button)

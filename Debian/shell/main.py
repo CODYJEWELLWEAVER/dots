@@ -1,13 +1,8 @@
 import setproctitle
 from fabric import Application
 from fabric.utils import get_relative_path, monitor_file
-from modules.bar import StatusBar
-from modules.media import Media
-from modules.power import PowerControl
-
-import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import Playerctl
+from modules.bar import Bar
+from modules.control_panel import ControlPanel
 
 
 if __name__ == "__main__":
@@ -15,13 +10,12 @@ if __name__ == "__main__":
 
     setproctitle.setproctitle(APP_NAME)
 
-    player_manager = Playerctl.PlayerManager()
 
-    media = Media(player_manager)
-    power = PowerControl()
-    bar = StatusBar()
+    control_panel = ControlPanel()
+    bar = Bar(control_panel)
+    
 
-    app = Application(APP_NAME, media, bar, power, open_inspector=False)
+    app = Application(APP_NAME, bar, control_panel, open_inspector=False)
 
     def apply_stylesheet(*_):
         return app.set_stylesheet_from_file(

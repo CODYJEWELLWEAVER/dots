@@ -2,11 +2,13 @@
 @import url(./styles/bar.css);
 @import url(./styles/power.css);
 @import url(./styles/media.css);
+@import url(./styles/control_panel.css);
+@import url(./styles/workspaces.css);
 
 * {
     all: unset;
     color: var(--foreground);
-    font-family: "Lilex Nerd Font Mono";
-    font-size: 25px;
+    font-family: "FantasqueSansM Nerd Font Mono";
+    font-size: 30px;
     border-radius: 20px;
 }

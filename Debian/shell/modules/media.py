@@ -7,8 +7,6 @@ from fabric.widgets.wayland import WaylandWindow as Window
 from fabric.widgets.image import Image
 from fabric.widgets.scale import Scale
 from fabric.core.fabricator import Fabricator
-from fabric.widgets.circularprogressbar import CircularProgressBar
-from fabric.widgets.overlay import Overlay
 from fabric.utils import truncate, bulk_connect
 
 from gi.repository import Playerctl, GdkPixbuf
@@ -24,14 +22,11 @@ import config.icons as icons
 """ Side Media control and info module. """
 
 
-class Media(Window):
+class MediaControl(Box):
     def __init__(self, manager, **kwargs):
         super().__init__(
-            name="media",
-            anchor="top left",
-            exclusivity="normal",
-            layer="top",
-            margin="10px 0px 0px 20px",
+            name="media-control",
+            spacing=10,
             kwargs=kwargs
         )
 
@@ -42,21 +37,22 @@ class Media(Window):
 
 
         self.title = Label(
-            style_classes="info-box-text",
+            name="info-box-title",
         )
         self.artist = Label(
-            style_classes="info-box-text",
+            name="info-box-artist",
         )
         self.info_box = Box(
             name="info-box",
+            orientation="v",
+            v_align="center",
+            h_align="center",
             children=[
                 self.title,
                 self.artist
             ]
         )
         self.media_info = EventBox(
-            name="media-info",
-            orientation="h",
             child=self.info_box,
             visible=False,
             events=["enter-notify", "leave-notify"]
@@ -129,18 +125,14 @@ class Media(Window):
         )
 
 
-        self.children = Box(
-            spacing=10,
-            orientation="h",
-            children=[
-                self.media_info,
-                self.output_control,
-                self.prev_track_control,
-                self.play_control,
-                self.next_track_control,
-                self.volume_scale   
-            ]
-        ) 
+        self.children = [
+            self.media_info,
+            self.output_control,
+            self.prev_track_control,
+            self.play_control,
+            self.next_track_control,
+            self.volume_scale   
+        ]
 
 
         for name in manager.props.player_names:
@@ -227,7 +219,7 @@ class Media(Window):
             artist_str = metadata["xesam:artist"][0]
             # add space and comma between title and artist when title is visible
             if self.title.get_property("visible"):
-                self.artist.set_property("label", f", {artist_str}")
+                self.artist.set_property("label", truncate(artist_str, 24))
             else:
                 self.artist.set_property("label", artist_str)
             self.artist.set_property("visible", True)
@@ -304,6 +296,11 @@ class Media(Window):
             value = 1
 
         sink = self.pulse.sink_default_get()
+
+        # unmute sink on slide
+        if sink.mute and value > 0:
+            self.pulse.sink_mute(sink.index, False)
+
         sink_volume = sink.volume
         sink_volume.value_flat = value
         self.pulse.sink_volume_set(sink.index, sink_volume)
