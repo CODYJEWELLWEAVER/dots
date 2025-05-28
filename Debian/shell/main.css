@@ -4,6 +4,7 @@
 @import url(./styles/media.css);
 @import url(./styles/control_panel.css);
 @import url(./styles/workspaces.css);
+@import url(./styles/sys_info.css);
 
 * {
     all: unset;

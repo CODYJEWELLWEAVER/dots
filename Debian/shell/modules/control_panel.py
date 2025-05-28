@@ -28,7 +28,9 @@ class ControlPanel(Window):
                 ),
                 Box(
                     name="control-panel-box",
-                    children=Label(label="Placeholder.")
+                    children=[
+                        Label(label="Placeholder.")
+                    ]
                 ),
                 Corner(
                     "top-left",
@@ -42,7 +44,9 @@ class ControlPanel(Window):
         self.event_box = EventBox(
             events="leave-notify",
             child=self.content_box,
-            name="control-panel-event-box"
+            name="control-panel-event-box",
+            h_expand=True,
+            v_expand=True
         )
 
 

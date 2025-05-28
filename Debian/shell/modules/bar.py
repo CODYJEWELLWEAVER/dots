@@ -8,10 +8,15 @@ from fabric.hyprland.widgets import WorkspaceButton, Workspaces
 
 from modules.media import MediaControl
 from modules.power import PowerControl
+from modules.sys_info import SysInfoCircularBar
 
 from util.ui import add_hover_cursor
 
+import config.icons as icons
+
 from gi.repository import Playerctl
+
+import psutil
 
 """
 Status bar for shell.
@@ -36,6 +41,36 @@ class Bar(Window):
 
 
         self.power = PowerControl()
+
+        
+        self.cpu_percent = Box(
+            name="cpu-percent-box",
+            children=SysInfoCircularBar(
+                name="cpu-percent-bar",
+                icon=icons.cpu,
+                poll_func=lambda *_: psutil.cpu_percent()
+            )
+        )
+
+
+        self.ram_percent = Box(
+            name="ram-percent-box",
+            children=SysInfoCircularBar(
+                name="ram-percent-bar",
+                icon=icons.ram,
+                poll_func=lambda *_: psutil.virtual_memory().percent
+            )
+        )
+
+
+        self.disk_percent = Box(
+            name="disk-percent-box",
+            children=SysInfoCircularBar(
+                name="disk-percent-bar",
+                icon=icons.disk,
+                poll_func=lambda *_: psutil.disk_usage("/").percent
+            )
+        )
 
 
         self.workspaces = Workspaces(
@@ -79,10 +114,15 @@ class Bar(Window):
 
         self.children = CenterBox(
             v_align="center",
-            start_children=self.media,
+            start_children=[
+                self.workspaces,
+                self.media    
+            ],
             center_children=self.control_panel_expander,
             end_children=[
-                self.workspaces,
+                self.cpu_percent,
+                self.ram_percent,
+                self.disk_percent,
                 self.power
             ]
         )

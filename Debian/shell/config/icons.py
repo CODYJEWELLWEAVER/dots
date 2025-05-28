@@ -20,4 +20,10 @@ pause: str = "&#xf690;"
 
 skip_next: str = "&#xf696;"
 
-dot: str = "&#xf698;"
+cpu: str = "&#xef8e;"
+
+gpu: str = "&#xf320;"
+
+disk: str = "&#xee7a;"
+
+ram: str = "&#xea88;"

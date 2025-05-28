@@ -1,0 +1,19 @@
+#cpu-percent-bar {
+    color: var(--foreground);
+    border: 2px solid var(--highlight);
+}
+
+#ram-percent-bar {
+    color: var(--foreground);
+    border: 2px solid var(--highlight);
+}
+
+#disk-percent-bar {
+    color: var(--foreground);
+    border: 2px solid var(--highlight);
+}
+
+.sys-info-icon {
+    font-family: tabler-icons;
+    font-size: 24px;
+}

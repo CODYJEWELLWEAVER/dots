@@ -27,7 +27,7 @@ class MediaControl(Box):
         super().__init__(
             name="media-control",
             spacing=10,
-            kwargs=kwargs
+            **kwargs
         )
 
         self.manager = manager
@@ -244,7 +244,7 @@ class MediaControl(Box):
         
         if "mpris:artUrl" in metadata.keys():
             file_path = get_file_path_from_mpris_url(metadata["mpris:artUrl"])
-            art_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(file_path, 300, 300, True)
+            art_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(file_path, 600, 600, True)
             self.media_panel.art.set_property("pixbuf", art_pixbuf)
             self.media_panel.art.set_property("visible", True)
         else:
@@ -323,11 +323,11 @@ class MediaPanel(Window):
     def __init__(self, **kwargs):
         super().__init__(
             name="media-info-panel",
-            layer="top",
-            anchor="left top",
+            layer="overlay",
+            anchor="center",
             exclusivity="none",
-            margin="20px 0px 0px 20px",
-            visible=False
+            visible=False,
+            **kwargs
         )
 
 
