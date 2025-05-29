@@ -1,12 +1,12 @@
 #workspaces {
     background-color: var(--background);
-    padding: 8px 5px;
-    border: 3px solid var(--foreground);
+    padding: 11px 11px;
     margin-top: 10px;
     margin-left: 20px;
 }
 
 #workspaces > button.active {
+    background-color: var(--highlight);
     min-width: 50px;
 }
 
@@ -16,4 +16,8 @@
     margin: 8px 5px;
     background-color: var(--foreground);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#workspaces > button.empty {
+    background-color: var(--background-alt);
 }

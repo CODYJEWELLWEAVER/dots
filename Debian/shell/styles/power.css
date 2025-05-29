@@ -1,6 +1,6 @@
 #power-menu {
     margin-right: 20px;
-    margin-left:20px;
+    margin-left:10px;
     margin-top: 10px;
     min-height: 40px;
 }
@@ -10,14 +10,12 @@
     padding: 5px;
     margin-top: 20px;
     margin-right: 5px;
-    border: 3px solid var(--foreground);
 }
 
 #power-menu-toggle {
     background-color: var(--background);
-    border: 3px solid var(--foreground);
     border-radius: 100%;
-    padding: 3px;
+    padding: 5px;
 }
 
 .power-menu-toggle-icon {
@@ -27,9 +25,9 @@
 }
 
 .power-menu-button {
-    border: 3px solid var(--foreground);
-    margin: 5px;
+    margin: 6px;
     border-radius: 100%;
+    padding: 6px;
 }
 
 .power-menu-label {
@@ -43,7 +41,6 @@
 
 .confirm-dialog {
     background-color: var(--background);
-    border: 3px solid var(--foreground);
 }
 
 .confirmation-menu {
@@ -55,7 +52,6 @@
 }
 
 .confirmation-menu-button {
-    border: 3px solid var(--foreground);
     margin: 5px;
     min-width: 100px;
 }

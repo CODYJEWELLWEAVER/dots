@@ -1,10 +1,13 @@
 from fabric.widgets.label import Label
+from fabric.widgets.box import Box
 from fabric import Fabricator
 
 import config.icons as icons
 from widgets.animated_circular_progress_bar import AnimatedCircularProgressBar
 
 import psutil
+from pynvml_utils import nvidia_smi
+nvsmi = nvidia_smi.getInstance()
 
 
 class SysInfoCircularBar(AnimatedCircularProgressBar):
@@ -28,7 +31,7 @@ class SysInfoCircularBar(AnimatedCircularProgressBar):
 
 
         self.value_fabricator = Fabricator(
-            interval=1000,
+            interval=500,
             poll_from=poll_func,
             on_changed=self.on_value_changed
         )
@@ -36,3 +39,60 @@ class SysInfoCircularBar(AnimatedCircularProgressBar):
 
     def on_value_changed(self, _, value):
         self.animate_value(value / 100.0)
+
+
+
+class CPUUsage(Box):
+    def __init__(self, **kwargs):
+        super().__init__(
+            style_classes="sys-info-box",
+            children=SysInfoCircularBar(
+                style_classes="sys-info-circular-bar",
+                icon=icons.cpu,
+                poll_func=lambda *_: psutil.cpu_percent()
+            ),
+            **kwargs
+        )
+
+
+class GPUUsage(Box):
+    def __init__(self, **kwargs):
+        super().__init__(
+            style_classes="sys-info-box",
+            children=SysInfoCircularBar(
+                style_classes="sys-info-circular-bar",
+                icon=icons.gpu,
+                poll_func=self._get_usage
+            )
+        )
+
+
+    def _get_usage(self, *_):
+        return nvsmi.DeviceQuery("utilization.gpu")['gpu'][0]\
+            ['utilization']['gpu_util']
+
+
+class RAM(Box):
+    def __init__(self, **kwargs):
+        super().__init__(
+            style_classes="sys-info-box",
+            children=SysInfoCircularBar(
+                style_classes="sys-info-circular-bar",
+                icon=icons.ram,
+                poll_func=lambda *_: psutil.virtual_memory().percent
+            ),
+            **kwargs
+        )
+
+
+class Disk(Box):
+    def __init__(self, **kwargs):
+        super().__init__(
+            style_classes="sys-info-box",
+            children=SysInfoCircularBar(
+                style_classes="sys-info-circular-bar",
+                icon=icons.disk,
+                poll_func=lambda *_: psutil.disk_usage("/").percent
+            ),
+            **kwargs
+        )

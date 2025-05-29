@@ -10,10 +10,8 @@ if __name__ == "__main__":
 
     setproctitle.setproctitle(APP_NAME)
 
-
     control_panel = ControlPanel()
     bar = Bar(control_panel)
-    
 
     app = Application(APP_NAME, bar, control_panel, open_inspector=False)
 

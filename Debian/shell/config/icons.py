@@ -22,8 +22,10 @@ skip_next: str = "&#xf696;"
 
 cpu: str = "&#xef8e;"
 
-gpu: str = "&#xf320;"
+gpu: str = "&#xf85e;"
 
 disk: str = "&#xee7a;"
 
 ram: str = "&#xea88;"
+
+sys_temp: str = "&#xeb38;"

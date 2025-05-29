@@ -2,7 +2,7 @@
     margin-top: 10px;
     margin-left: 20px;
     background-color: var(--background);
-    border: 3px solid var(--foreground);
+    padding: 0px 5px;
 }
 
 .media-control-icon {
@@ -24,10 +24,10 @@
 }
 
 #volume-scale {
-    margin: 8px;
+    margin: 10px;
     background-color: var(--background-alt);
     min-width: 200px;
-    border: 4px solid var(--foreground);
+    border: 5px solid var(--foreground);
 }
 
 #volume-scale trough {
@@ -51,12 +51,10 @@
 
 #media-info-panel {
     background-color: var(--background);
-    border: 3px solid var(--foreground);
 }
 
 #media-info-panel-box {
     padding: 20px;
-    min-width: 600px;
 }
 
 .media-info-panel-text {
@@ -66,5 +64,4 @@
 
 #media-art {
     box-shadow: -5px 5px 10px steelblue;
-    border-radius: 0px;
 }

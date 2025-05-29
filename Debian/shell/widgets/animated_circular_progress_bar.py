@@ -191,7 +191,7 @@ class AnimatedCircularProgressBar(CircularProgressBar):
             Animator(
                 # edit the following parameters to customize the animation
                 bezier_curve=(0.5, 0.0, 0.5, 1.0),
-                duration=1.5,
+                duration=0.5,
                 min_value=self.min_value,
                 max_value=self.value,
                 tick_widget=self,
