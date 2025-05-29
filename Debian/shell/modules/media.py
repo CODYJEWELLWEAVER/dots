@@ -246,7 +246,7 @@ class MediaControl(Box):
         
         if "mpris:artUrl" in metadata.keys():
             file_path = get_file_path_from_mpris_url(metadata["mpris:artUrl"])
-            art_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(file_path, 300, 300, True)
+            art_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(file_path, 400, 400, True)
             self.media_panel.art.set_property("pixbuf", art_pixbuf)
             self.media_panel.art.set_property("visible", True)
         else:

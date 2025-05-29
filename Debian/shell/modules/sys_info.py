@@ -3,11 +3,15 @@ from fabric.widgets.box import Box
 from fabric import Fabricator
 
 import config.icons as icons
+import config.network as network
 from widgets.animated_circular_progress_bar import AnimatedCircularProgressBar
 
 import psutil
 from pynvml_utils import nvidia_smi
 nvsmi = nvidia_smi.getInstance()
+
+
+# TODO: Move fabricators into services so they can be shared efficiently
 
 
 class SysInfoCircularBar(AnimatedCircularProgressBar):
@@ -95,4 +99,53 @@ class Disk(Box):
                 poll_func=lambda *_: psutil.disk_usage("/").percent
             ),
             **kwargs
+        )
+
+
+class Network(Box):
+    def __init__(self, **kwargs):
+        super().__init__(
+            style_classes="sys-info-box",
+            children=Label(
+                style_classes="sys-info-icon",
+                markup=icons.wifi
+            ),
+            v_align="center",
+            h_align="center",
+            h_expand=True,
+            v_expand=True,
+            **kwargs
+        )
+
+
+        self.connection_monitor = Fabricator(
+            interval=500,
+            poll_from=self._get_connection_info,
+            on_changed=self._on_connection_changed
+        )
+
+    
+    def _get_connection_info(self, *_) -> str | None:
+        connections = psutil.net_if_stats()
+
+        # see config.network for configuration
+        if network.ethernet in connections:
+            return network.ethernet
+        elif network.wifi in connections:
+            return network.wifi
+        else:
+            return None
+        
+
+    def _on_connection_changed(self, f, connection_name):
+        if connection_name == network.ethernet:
+            icon = icons.ethernet
+        elif connection_name == network.wifi:
+            icon = icons.wifi
+        else:
+            icon = icons.no_network
+
+        self.children = Label(
+            style_classes="sys-info-icon",
+            markup=icon
         )

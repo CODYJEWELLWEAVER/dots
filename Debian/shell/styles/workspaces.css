@@ -15,7 +15,7 @@
     min-height: 12px;
     margin: 8px 5px;
     background-color: var(--foreground);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.5, 0, 0.5, 1);
 }
 
 #workspaces > button.empty {

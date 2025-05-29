@@ -3,6 +3,7 @@
     margin-top: 10px;
     border-radius: 100%;
     margin-right: 10px;
+    min-width: 50px;
 }
 
 .sys-info-circular-bar{
@@ -13,4 +14,5 @@
 .sys-info-icon {
     font-family: tabler-icons;
     font-size: 28px;
+    padding: 10px;
 }

@@ -29,3 +29,9 @@ disk: str = "&#xee7a;"
 ram: str = "&#xea88;"
 
 sys_temp: str = "&#xeb38;"
+
+wifi: str = "&#xeb52;"
+
+ethernet: str = "&#xf09f;"
+
+no_network: str = "&#xf414;"

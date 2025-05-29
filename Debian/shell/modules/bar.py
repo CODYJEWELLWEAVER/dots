@@ -8,7 +8,9 @@ from fabric.hyprland.widgets import WorkspaceButton, Workspaces
 
 from modules.media import MediaControl
 from modules.power import PowerControl
-from modules.sys_info import CPUUsage, GPUUsage, RAM, Disk
+from modules.sys_info import CPUUsage, GPUUsage, RAM, Disk, Network
+
+from services.weather import WeatherService
 
 
 from gi.repository import Playerctl
@@ -43,6 +45,7 @@ class Bar(Window):
         self.gpu_usage = GPUUsage()
         self.ram = RAM()
         self.disk = Disk()
+        self.network = Network()
 
 
         self.workspaces = Workspaces(
@@ -95,9 +98,12 @@ class Bar(Window):
                 self.gpu_usage,
                 self.ram,
                 self.disk,
+                self.network,
                 self.power
             ]
         )
+
+        weather_service = WeatherService()
 
 
     def show_control_panel(self, *args):
