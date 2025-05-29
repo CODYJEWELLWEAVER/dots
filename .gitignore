@@ -173,5 +173,5 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# open weather map
-config/weather_api_key.py
+# open weather maps api key
+config/weather_api.py
