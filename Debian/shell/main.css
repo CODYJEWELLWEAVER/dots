@@ -5,6 +5,7 @@
 @import url(./styles/control_panel.css);
 @import url(./styles/workspaces.css);
 @import url(./styles/sys_info.css);
+@import url(./styles/weather.css);
 
 * {
     all: unset;

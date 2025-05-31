@@ -35,3 +35,16 @@ wifi: str = "&#xeb52;"
 ethernet: str = "&#xf09f;"
 
 no_network: str = "&#xf414;"
+
+fahrenheit: str = "&#xeb37;"
+
+weather = {
+    "Clear-Night": "&#xece7;",
+    "Clear-Day": "&#xeb30;",
+    "Clouds": "&#xea76;",
+    "Thunderstom": "&#xea74;",
+    "Drizzle": "&#xea72;",
+    "Rain": "&#xea72;",
+    "Snow": "&#xea73;",
+    "Atmosphere": "&#xec30;",
+}

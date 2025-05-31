@@ -3,6 +3,7 @@
     padding: 11px 11px;
     margin-top: 10px;
     margin-left: 20px;
+    min-width: 240px;
 }
 
 #workspaces > button.active {

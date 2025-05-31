@@ -5,10 +5,12 @@ from fabric.widgets.box import Box
 from fabric.widgets.centerbox import CenterBox
 from fabric.widgets.shapes.corner import Corner
 from fabric.hyprland.widgets import WorkspaceButton, Workspaces
+from fabric.bluetooth import BluetoothClient
 
 from modules.media import MediaControl
 from modules.power import PowerControl
 from modules.sys_info import CPUUsage, GPUUsage, RAM, Disk, Network
+from modules.weather import WeatherInfo
 
 from services.weather import WeatherService
 
@@ -40,12 +42,20 @@ class Bar(Window):
 
         self.power = PowerControl()
 
+
+        self.weather_service = WeatherService()
+        self.weather_info = WeatherInfo(self.weather_service)
+
         
         self.cpu_usage = CPUUsage()
         self.gpu_usage = GPUUsage()
         self.ram = RAM()
         self.disk = Disk()
         self.network = Network()
+        self.bluetooth = BluetoothClient()
+
+
+        self.bluetooth.toggle_scan()
 
 
         self.workspaces = Workspaces(
@@ -94,6 +104,7 @@ class Bar(Window):
             ],
             center_children=self.control_panel_expander,
             end_children=[
+                self.weather_info,
                 self.cpu_usage,
                 self.gpu_usage,
                 self.ram,
@@ -102,8 +113,6 @@ class Bar(Window):
                 self.power
             ]
         )
-
-        weather_service = WeatherService()
 
 
     def show_control_panel(self, *args):
