@@ -115,13 +115,6 @@ class Network(Box):
         )
 
 
-        self.connection_monitor = Fabricator(
-            interval=500,
-            poll_from=self._get_connection_info,
-            on_changed=self._on_connection_changed
-        )
-
-
         self.network_status_icon = Label(
             style_classes="sys-info-icon",
             markup=icons.wifi
@@ -140,6 +133,13 @@ class Network(Box):
 
         
         self.children = self.network_status_bar
+
+
+        self.connection_monitor = Fabricator(
+            interval=500,
+            poll_from=self._get_connection_info,
+            on_changed=self._on_connection_changed
+        )
 
     
     def _get_connection_info(self, *_) -> str | None:

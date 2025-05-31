@@ -3,6 +3,7 @@ from fabric import Application
 from fabric.utils import get_relative_path, monitor_file
 from modules.bar import Bar
 from modules.control_panel import ControlPanel
+from services.weather import WeatherService
 
 
 if __name__ == "__main__":
@@ -10,8 +11,9 @@ if __name__ == "__main__":
 
     setproctitle.setproctitle(APP_NAME)
 
-    control_panel = ControlPanel()
-    bar = Bar(control_panel)
+    weather_service = WeatherService()
+    control_panel = ControlPanel(weather_service)
+    bar = Bar(weather_service, control_panel)
 
     app = Application(APP_NAME, bar, control_panel, open_inspector=False)
 

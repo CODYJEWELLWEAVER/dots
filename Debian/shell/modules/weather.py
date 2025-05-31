@@ -14,10 +14,13 @@ SECONDS_PER_HOUR = 3600
 
 
 class WeatherInfo(Box):
-    def __init__(self, service: WeatherService, **kwargs):
+    def __init__(self, service: WeatherService, bar=True, **kwargs):
         super().__init__(
-            name="weather-info",
-            spacing=10
+            name="weather-info" if bar else "",
+            spacing=10,
+            v_align="center",
+            h_align="center",
+            **kwargs
         )
 
 

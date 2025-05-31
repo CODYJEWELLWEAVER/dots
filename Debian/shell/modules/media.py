@@ -13,6 +13,7 @@ from gi.repository import Playerctl, GdkPixbuf
 
 import pulsectl
 
+from widgets.custom_image import CustomImage
 from util.ui import add_hover_cursor, toggle_visible
 from util.helpers import get_file_path_from_mpris_url
 from config.media import HEADPHONES
@@ -334,7 +335,7 @@ class MediaPanel(Window):
         )
 
 
-        self.art = Image(
+        self.art = CustomImage(
             name="media-art",
             visible=False
         )
@@ -367,7 +368,12 @@ class MediaPanel(Window):
             v_align="center",
             spacing=10,
             children=[
-                self.art,
+                Box(
+                    name="media-art-box",
+                    children=self.art,
+                    v_expand=True,
+                    h_expand=True
+                ),
                 self.title,
                 self.artist,
                 self.album

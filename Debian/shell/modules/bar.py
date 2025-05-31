@@ -5,8 +5,8 @@ from fabric.widgets.box import Box
 from fabric.widgets.centerbox import CenterBox
 from fabric.widgets.shapes.corner import Corner
 from fabric.hyprland.widgets import WorkspaceButton, Workspaces
-from fabric.bluetooth import BluetoothClient
 
+from modules.control_panel import ControlPanel
 from modules.media import MediaControl
 from modules.power import PowerControl
 from modules.sys_info import CPUUsage, GPUUsage, RAM, Disk, Network
@@ -23,7 +23,12 @@ Status bar for shell.
 """
 
 class Bar(Window):
-    def __init__(self, control_panel, **kwargs):
+    def __init__(
+            self, 
+            weather_service: WeatherService, 
+            control_panel: ControlPanel, 
+            **kwargs
+        ):
         super().__init__(
             name="bar",
             layer="top",
@@ -42,9 +47,7 @@ class Bar(Window):
 
         self.power = PowerControl()
 
-
-        self.weather_service = WeatherService()
-        self.weather_info = WeatherInfo(self.weather_service)
+        self.weather_info = WeatherInfo(weather_service)
 
         
         self.cpu_usage = CPUUsage()
@@ -52,10 +55,6 @@ class Bar(Window):
         self.ram = RAM()
         self.disk = Disk()
         self.network = Network()
-        self.bluetooth = BluetoothClient()
-
-
-        self.bluetooth.toggle_scan()
 
 
         self.workspaces = Workspaces(
