@@ -8,6 +8,8 @@ reboot: str = "&#xf3ae;"
 
 suspend: str = "&#xf868;"
 
+power_off: str = "&#xecec;"
+
 speaker: str = "&#x10045;"
 
 headphones: str = "&#xfa3c;"

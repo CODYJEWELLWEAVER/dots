@@ -1,5 +1,6 @@
 from fabric.widgets.label import Label
 from fabric.widgets.box import Box
+from fabric.widgets.circularprogressbar import CircularProgressBar
 from fabric import Fabricator
 
 import config.icons as icons
@@ -106,10 +107,6 @@ class Network(Box):
     def __init__(self, **kwargs):
         super().__init__(
             style_classes="sys-info-box",
-            children=Label(
-                style_classes="sys-info-icon",
-                markup=icons.wifi
-            ),
             v_align="center",
             h_align="center",
             h_expand=True,
@@ -123,6 +120,26 @@ class Network(Box):
             poll_from=self._get_connection_info,
             on_changed=self._on_connection_changed
         )
+
+
+        self.network_status_icon = Label(
+            style_classes="sys-info-icon",
+            markup=icons.wifi
+        )
+
+
+        self.network_status_bar = CircularProgressBar(
+            name="network-status-circular-bar",
+            style_classes="connected",
+            h_align="center",
+            v_align="center",
+            size=50,
+            line_width=6,
+            child=self.network_status_icon
+        )
+
+        
+        self.children = self.network_status_bar
 
     
     def _get_connection_info(self, *_) -> str | None:
@@ -145,7 +162,16 @@ class Network(Box):
         else:
             icon = icons.no_network
 
-        self.children = Label(
+
+        self.network_status_icon = Label(
             style_classes="sys-info-icon",
             markup=icon
         )
+
+
+        if not connection_name:
+            self.network_status_bar.remove_style_class("connected")
+            self.network_status_bar.add_style_class("not-connected")
+        else:
+            self.network_status_bar.remove_style_class("not-connected")
+            self.network_status_bar.add_style_class("connected")

@@ -4,4 +4,6 @@
     --background-alt: #10111D;
     --highlight: #EBC06C;
     --shadow: #06070C;
+    --status-ok: #43e060;
+    --status-fail: #f02929;
 }

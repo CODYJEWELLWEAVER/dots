@@ -75,7 +75,6 @@ class WeatherService(Service):
                 self.status = True
                 
                 response = await response.json()
-                print(response)
                 
                 weather_group = response["weather"][0]["main"]
                 current_temperature = response["main"]["temp"]

@@ -57,7 +57,7 @@ class PowerMenu(Window):
         )
 
 
-        # dialogs for confirming reboot/suspend
+        # dialogs for confirming reboot/suspend/poweroff
         self.reboot_dialog = ConfirmationDialog(
             "Do you want to reboot?",
             self.reboot_system
@@ -65,6 +65,10 @@ class PowerMenu(Window):
         self.suspend_dialog = ConfirmationDialog(
             "Do you want to suspend?",
             self.suspend_system
+        )
+        self.shutdown_dialog = ConfirmationDialog(
+            "Do you want to power off?",
+            self.shutdown_system
         )
 
 
@@ -101,13 +105,22 @@ class PowerMenu(Window):
         add_hover_cursor(self.suspend_button)
 
 
-        #TODO: Add shutdown option
+        self.power_off_button = Button(
+            child=Label(
+                style_classes="power-menu-icon",
+                markup=icons.power_off
+            ),
+            style_classes="power-menu-button",
+            on_clicked=self.show_shutdown_dialog
+        )
+        add_hover_cursor(self.power_off_button)
 
 
         self.menu.children = [
             self.lock_button,
             self.reboot_button,
-            self.suspend_button
+            self.suspend_button,
+            self.power_off_button
         ]
 
         
@@ -116,14 +129,24 @@ class PowerMenu(Window):
 
     def show_reboot_dialog(self, *args):
         toggle_visible(self)
-        self.suspend_dialog.set_visible(False) # close suspend dialog if open
+        self.suspend_dialog.set_visible(False) 
+        self.shutdown_dialog.set_visible(False)
         toggle_visible(self.reboot_dialog)
 
 
     def show_suspend_dialog(self, *args):
         toggle_visible(self)
-        self.reboot_dialog.set_visible(False) # close reboot dialog if open
+        self.reboot_dialog.set_visible(False)
+        self.shutdown_dialog.set_visible(False)
         toggle_visible(self.suspend_dialog)
+
+
+    def show_shutdown_dialog(self, *args):
+        toggle_visible(self)
+        self.suspend_dialog.set_visible(False)
+        self.reboot_dialog.set_visible(False)
+        toggle_visible(self.shutdown_dialog)
+
 
 
     def lock_screen(self, *args):
@@ -137,6 +160,10 @@ class PowerMenu(Window):
 
     def suspend_system(self, *args):
         exec_shell_command("systemctl suspend")
+
+    
+    def shutdown_system(self, *args):
+        exec_shell_command("systemctl poweroff")
 
 
 class ConfirmationDialog(Window):

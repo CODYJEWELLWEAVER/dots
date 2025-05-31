@@ -16,3 +16,13 @@
     font-size: 28px;
     padding: 10px;
 }
+
+#network-status-circular-bar.connected {
+    color: var(--background);
+    border: 4px solid var(--status-ok);
+}
+
+#network-status-circular-bar.not-connected {
+    color: var(--background);
+    border: 4px solid var(--status-fail);
+}
