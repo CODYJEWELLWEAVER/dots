@@ -6,6 +6,7 @@
 @import url(./styles/workspaces.css);
 @import url(./styles/sys_info.css);
 @import url(./styles/weather.css);
+@import url(./styles/calendar.css);
 
 * {
     all: unset;

@@ -247,11 +247,17 @@ class MediaControl(Box):
         
         if "mpris:artUrl" in metadata.keys():
             file_path = get_file_path_from_mpris_url(metadata["mpris:artUrl"])
-            art_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(file_path, 400, 400, True)
+            self_width = self.get_preferred_width().natural_width
+            art_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                file_path, 
+                self_width - 60, 
+                self_width - 60, 
+                True
+            )
             self.media_panel.art.set_property("pixbuf", art_pixbuf)
             self.media_panel.art.set_property("visible", True)
         else:
-            self.media_panel.art.set_property("visible", False) 
+            self.media_panel.art.set_property("visible", False)
 
 
     def on_name_appeared(self, manager, name):
@@ -330,7 +336,7 @@ class MediaPanel(Window):
             anchor="left top",
             exclusivity="none",
             visible=False,
-            margin="20px 0px 0px 292px",
+            margin="20px 0px 0px 302px",
             **kwargs
         )
 

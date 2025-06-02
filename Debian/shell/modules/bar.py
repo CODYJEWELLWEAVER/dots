@@ -12,8 +12,6 @@ from modules.power import PowerControl
 from modules.sys_info import CPUUsage, GPUUsage, RAM, Disk, Network
 from modules.weather import WeatherInfo
 
-from services.weather import WeatherService
-
 
 from gi.repository import Playerctl
 
@@ -24,8 +22,7 @@ Status bar for shell.
 
 class Bar(Window):
     def __init__(
-            self, 
-            weather_service: WeatherService, 
+            self,
             control_panel: ControlPanel, 
             **kwargs
         ):
@@ -47,7 +44,8 @@ class Bar(Window):
 
         self.power = PowerControl()
 
-        self.weather_info = WeatherInfo(weather_service)
+
+        self.weather_info = WeatherInfo()
 
         
         self.cpu_usage = CPUUsage()
@@ -67,6 +65,7 @@ class Bar(Window):
 
 
         self.date_time = DateTime(
+            formatters="%I:%M %p",
             name="date-time",
         )
 

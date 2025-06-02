@@ -1,5 +1,7 @@
 from fabric import Service, Property, Signal
 
+from util.singleton import Singleton
+
 from gi.repository import GLib
 import asyncio
 import aiohttp
@@ -7,7 +9,7 @@ import aiohttp
 from config.weather import WEATHER_API_URL
 
 
-class WeatherService(Service):
+class WeatherService(Service, Singleton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -27,26 +29,16 @@ class WeatherService(Service):
     @group.setter
     def group(self, new_group):
         self._group = new_group
-        self.group_changed(new_group)
 
 
-    @Signal
-    def group_changed(self, new_group: str) -> None:...
-
-
-    @Property(float, flags="read-write")
-    def temperature(self) -> float:
+    @Property(int, flags="read-write")
+    def temperature(self) -> int:
         return self._temperature
     
 
     @temperature.setter
-    def temperature(self, new_temperature: float):
+    def temperature(self, new_temperature: int):
         self._temperature = new_temperature
-        self.temperature_changed(new_temperature)
-
-
-    @Signal
-    def temperature_changed(self, new_temperature: float) -> None:...
 
 
     @Property(bool, default_value=True, flags="read-write")
@@ -57,11 +49,6 @@ class WeatherService(Service):
     @status.setter
     def status(self, new_status: bool):
         self._staus = new_status
-        self.status_changed(new_status)
-
-
-    @Signal
-    def status_changed(self, new_status: bool) -> None:...
 
 
     async def retrieve_data(self):
@@ -89,6 +76,6 @@ class WeatherService(Service):
         asyncio.run(self.retrieve_data())
 
         GLib.timeout_add_seconds(
-            120, # 2 secs 
+            120, # 2 min 
             lambda *_: asyncio.run(self.retrieve_data())
         )

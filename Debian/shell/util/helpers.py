@@ -5,6 +5,7 @@ from gi.repository import Gtk
 
 import os
 import platform
+import locale
 
 
 def get_file_path_from_mpris_url(mpris_url: str) -> str:
@@ -24,3 +25,15 @@ def get_user_login_name():
 def get_system_node_name():
     node_name = platform.node()
     return node_name if node_name != "" else "system"
+
+
+def get_country_code():
+    language_code = locale.getlocale()[0]
+
+    if language_code is None:
+        return "US"
+    
+    try:
+        return language_code.split("_")[1]
+    except IndexError:
+        return "US"

@@ -14,7 +14,7 @@ SECONDS_PER_HOUR = 3600
 
 
 class WeatherInfo(Box):
-    def __init__(self, service: WeatherService, bar=True, **kwargs):
+    def __init__(self, bar=True, **kwargs):
         super().__init__(
             name="weather-info" if bar else "",
             spacing=10,
@@ -27,12 +27,15 @@ class WeatherInfo(Box):
         self.hide()
 
 
+        self.service = WeatherService.get_instance()
+
+
         bulk_connect(
-            service,
+            self.service,
             {
-                "status-changed": self.on_status_changed,
-                "group-changed": self.on_group_changed,
-                "temperature-changed": self.on_temperature_changed
+                "notify::status": self.on_status_changed,
+                "notify::group": self.on_group_changed,
+                "notify::temperature": self.on_temperature_changed
             }
         )
 
@@ -52,9 +55,9 @@ class WeatherInfo(Box):
 
 
         # run callbacks to initialize
-        self.on_status_changed(service, service.status)
-        self.on_group_changed(service, service.group)
-        self.on_temperature_changed(service, service.temperature)
+        self.on_status_changed(self.service, None)
+        self.on_group_changed(self.service, None)
+        self.on_temperature_changed(self.service, None)
 
 
         self.children = [
@@ -65,15 +68,15 @@ class WeatherInfo(Box):
 
 
 
-    def on_status_changed(self, service, status):
-        if status:
+    def on_status_changed(self, service, _):
+        if service.status:
             self.show_all()
         else:
             self.hide()
 
 
-    def on_group_changed(self, service, group):
-        icon = self.lookup_weather_icon(group)
+    def on_group_changed(self, service, _):
+        icon = self.lookup_weather_icon(service.group)
 
         if icon != None:
             self.weather_icon = Label(
@@ -82,8 +85,8 @@ class WeatherInfo(Box):
             )
 
 
-    def on_temperature_changed(self, service, temperature):
-        self.temperature.set_property("label", f"{int(temperature)}")
+    def on_temperature_changed(self, service, _):
+        self.temperature.set_property("label", str(service.temperature))
 
     
     def lookup_weather_icon(self, group):

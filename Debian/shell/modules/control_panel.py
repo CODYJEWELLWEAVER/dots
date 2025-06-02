@@ -7,6 +7,7 @@ from fabric.widgets.datetime import DateTime
 
 from services.weather import WeatherService
 from modules.weather import WeatherInfo
+from modules.calendar import Calendar
 from widgets.custom_image import CustomImage
 from config.profile import PROFILE_IMAGE_PATH
 from util.helpers import get_system_node_name, get_user_login_name
@@ -15,15 +16,16 @@ from gi.repository import GdkPixbuf
 
 
 class ControlPanel(Window):
-    def __init__(self, weather_service: WeatherService, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(
             layer="overlay",
             title="fabric-control-panel",
             name="control-panel",
             anchor="top center",
             exclusivity="none",
-            margin="-60px 0px 0px 0px",
+            margin="-62px 0px 0px 0px",
             visible=False,
+            keyboard_mode="on-demand",
             kwargs=kwargs    
         )
 
@@ -31,8 +33,6 @@ class ControlPanel(Window):
         self.profile_image = Box(
             name="profile-image-box",
             children=ProfileImage(200, 200),
-            h_expand=True,
-            v_expand=True
         )
 
 
@@ -50,10 +50,16 @@ class ControlPanel(Window):
         
         # TODO: Add specific weather widget for control panel with
         # forecast and more information.
-        self.weather_info = WeatherInfo(weather_service, bar=False)
+        self.weather_info = WeatherInfo(bar=False)
 
 
-        self.content_box = Box(
+        self.calendar = Calendar()
+
+
+        self.connect("focus-out-event", lambda *_: self.hide())
+
+
+        self.children = Box(
             children=[
                 Corner(
                     "top-right",
@@ -78,6 +84,14 @@ class ControlPanel(Window):
                                         self.datetime,
                                         self.weather_info
                                     ]
+                                ),
+                                Box(
+                                    orientation="v",
+                                    spacing=20,
+                                    h_align="center",
+                                    children=[
+                                        self.calendar
+                                    ]
                                 )
                             ]
                         )
@@ -90,21 +104,6 @@ class ControlPanel(Window):
                 ),
             ]
         )
-
-
-        self.event_box = EventBox(
-            events="leave-notify",
-            child=self.content_box,
-            name="control-panel-event-box",
-            h_expand=True,
-            v_expand=True
-        )
-
-
-        self.event_box.connect("leave-notify-event", lambda *_: self.hide())
-
-
-        self.children = self.event_box
 
 
 class ProfileImage(CustomImage):

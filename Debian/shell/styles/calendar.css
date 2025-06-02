@@ -1,0 +1,17 @@
+#calendar {
+    padding-left: 30px;
+}
+
+.day-label {
+    font-size: 20px;
+}
+
+.day-button {
+    min-width: 50px;
+    min-height: 50px;
+    transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.day-button:hover {
+    background-color: var(--background-alt);
+}
