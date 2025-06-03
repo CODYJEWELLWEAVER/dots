@@ -1,10 +1,12 @@
-from fabric import Service, Property, Signal
+from fabric import Service, Property
+from fabric.utils.helpers import invoke_repeater
 
 from util.singleton import Singleton
 
 from gi.repository import GLib
 import asyncio
 import aiohttp
+from loguru import logger
 
 from config.weather import WEATHER_API_URL
 
@@ -54,6 +56,8 @@ class WeatherService(Service, Singleton):
     async def retrieve_data(self):
         async with aiohttp.ClientSession() as session:
             async with session.get(WEATHER_API_URL) as response:
+
+                logger.debug("Fetching weather data...")
 
                 if response.status != 200:
                     self.status = False

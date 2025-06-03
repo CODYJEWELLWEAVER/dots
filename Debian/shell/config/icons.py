@@ -40,6 +40,10 @@ no_network: str = "&#xf414;"
 
 fahrenheit: str = "&#xeb37;"
 
+arrow_left: str = "&#xea19;"
+
+arrow_right: str = "&#xea1f;"
+
 weather = {
     "Clear-Night": "&#xece7;",
     "Clear-Day": "&#xeb30;",

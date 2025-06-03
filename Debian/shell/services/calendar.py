@@ -25,7 +25,7 @@ class Calendar(Service, Singleton):
 
         # TODO: Find a more efficient way to check this?
         # check every minute for change of date
-        invoke_repeater(60000, self.poll_for_date_change) # 60 seconds
+        invoke_repeater(60000, self.update_today) # 60 seconds
 
 
     @Property(Date, flags="readable")
@@ -55,8 +55,27 @@ class Calendar(Service, Singleton):
     
 
     @Property(str, flags="readable")
-    def month_name(self) -> str:
-        return calendar.month_name[self.selected_date.month]
+    def current_month(self) -> str:
+        return self.get_month_name(self.today.month)
+    
+
+    @Property(str, flags="readable")
+    def selected_day(self) -> str:
+        return str(self.selected_date.day)
+    
+
+    @Property(str, flags="readable")
+    def selected_month(self) -> str:
+        return self.get_month_name(self.selected_date.month)
+    
+
+    @Property(str, flags="readable")
+    def selected_year(self) -> str:
+        return str(self.selected_date.year)
+    
+
+    def get_month_name(self, month: int) -> str:
+        return calendar.month_name[month]
 
 
     def get_holiday(self, date: Date) -> str | None:
@@ -66,10 +85,56 @@ class Calendar(Service, Singleton):
             return None
         
 
-    def poll_for_date_change(self) -> bool:
+    def update_today(self) -> bool:
         today = Date.today()
 
         if today != self.today:
             self.today = today
 
         return True
+    
+
+    def select_prev_month(self) -> None:
+        selected_month = self.selected_date.month
+        selected_year = self.selected_date.year
+
+        prev_month = selected_month - 1 if selected_month > 1 else 12
+        year = selected_year if prev_month != 12 else selected_year - 1
+
+        self.selected_date = Date(year, prev_month, 1)
+
+    
+    def select_next_month(self) -> None:
+        selected_month = self.selected_date.month
+        selected_year = self.selected_date.year
+
+        next_month = selected_month + 1 if selected_month < 12 else 1
+        year = selected_year if next_month != 1 else selected_year + 1
+
+        self.selected_date = Date(year, next_month, 1)
+
+
+    def select_prev_year(self) -> None:
+        year = self.selected_date.year - 1
+        day = self.today.day if year == self.today.year else 1
+        month = self.today.month if year == self.today.year else 1
+        # if jumping to current year, select today, else select first day of year
+        self.selected_date = Date(year, month, day)
+
+
+    def select_next_year(self) -> None:
+        year = self.selected_date.year + 1
+        day = self.today.day if year == self.today.year else 1
+        month = self.today.month if year == self.today.year else 1
+        # if jumping to current year, select today, else select first day of year
+        self.selected_date = Date(year, month, day)
+
+
+    def select_month(self, month: int) -> None:
+        year = self.selected_date.year
+        self.selected_date = Date(year, month, 1)
+
+
+    def select_day(self, day: int) -> None:
+        prev_date = self.selected_date
+        self.selected_date = Date(prev_date.year, prev_date.month, day)
