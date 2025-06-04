@@ -1,11 +1,10 @@
 import gi
-
-gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-
 import os
 import platform
 import locale
+
+gi.require_version("Gtk", "3.0")
 
 
 def get_file_path_from_mpris_url(mpris_url: str) -> str:
@@ -32,7 +31,7 @@ def get_country_code():
 
     if language_code is None:
         return "US"
-    
+
     try:
         return language_code.split("_")[1]
     except IndexError:

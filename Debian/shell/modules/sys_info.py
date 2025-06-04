@@ -9,6 +9,7 @@ from widgets.animated_circular_progress_bar import AnimatedCircularProgressBar
 
 import psutil
 from pynvml_utils import nvidia_smi
+
 nvsmi = nvidia_smi.getInstance()
 
 
@@ -25,26 +26,17 @@ class SysInfoCircularBar(AnimatedCircularProgressBar):
             value=0,
             start_angle=90,
             end_angle=450,
-            **kwargs
+            **kwargs,
         )
 
-
-        self.children = Label(
-            markup=icon,
-            style_classes="sys-info-icon"
-        )
-
+        self.children = Label(markup=icon, style_classes="sys-info-icon")
 
         self.value_fabricator = Fabricator(
-            interval=500,
-            poll_from=poll_func,
-            on_changed=self.on_value_changed
+            interval=500, poll_from=poll_func, on_changed=self.on_value_changed
         )
-
 
     def on_value_changed(self, _, value):
         self.animate_value(value / 100.0)
-
 
 
 class CPUUsage(Box):
@@ -54,9 +46,9 @@ class CPUUsage(Box):
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",
                 icon=icons.cpu,
-                poll_func=lambda *_: psutil.cpu_percent()
+                poll_func=lambda *_: psutil.cpu_percent(),
             ),
-            **kwargs
+            **kwargs,
         )
 
 
@@ -67,14 +59,12 @@ class GPUUsage(Box):
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",
                 icon=icons.gpu,
-                poll_func=self._get_usage
-            )
+                poll_func=self._get_usage,
+            ),
         )
 
-
     def _get_usage(self, *_):
-        return nvsmi.DeviceQuery("utilization.gpu")['gpu'][0]\
-            ['utilization']['gpu_util']
+        return nvsmi.DeviceQuery("utilization.gpu")["gpu"][0]["utilization"]["gpu_util"]
 
 
 class RAM(Box):
@@ -84,9 +74,9 @@ class RAM(Box):
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",
                 icon=icons.ram,
-                poll_func=lambda *_: psutil.virtual_memory().percent
+                poll_func=lambda *_: psutil.virtual_memory().percent,
             ),
-            **kwargs
+            **kwargs,
         )
 
 
@@ -97,9 +87,9 @@ class Disk(Box):
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",
                 icon=icons.disk,
-                poll_func=lambda *_: psutil.disk_usage("/").percent
+                poll_func=lambda *_: psutil.disk_usage("/").percent,
             ),
-            **kwargs
+            **kwargs,
         )
 
 
@@ -112,15 +102,12 @@ class Network(Box):
             h_align="center",
             h_expand=True,
             v_expand=True,
-            **kwargs
+            **kwargs,
         )
-
 
         self.network_status_icon = Label(
-            style_classes="sys-info-icon",
-            markup=icons.wifi
+            style_classes="sys-info-icon", markup=icons.wifi
         )
-
 
         self.network_status_bar = CircularProgressBar(
             name="network-status-circular-bar",
@@ -129,20 +116,17 @@ class Network(Box):
             v_align="center",
             size=50,
             line_width=6,
-            child=self.network_status_icon
+            child=self.network_status_icon,
         )
 
-        
         self.children = self.network_status_bar
-
 
         self.connection_monitor = Fabricator(
             interval=500,
             poll_from=self._get_connection_info,
-            on_changed=self._on_connection_changed
+            on_changed=self._on_connection_changed,
         )
 
-    
     def _get_connection_info(self, *_) -> str | None:
         connections = psutil.net_if_stats()
 
@@ -153,7 +137,6 @@ class Network(Box):
             return network.wifi
         else:
             return None
-        
 
     def _on_connection_changed(self, f, connection_name):
         if connection_name == network.ethernet:
@@ -163,12 +146,7 @@ class Network(Box):
         else:
             icon = icons.no_network
 
-
-        self.network_status_icon = Label(
-            style_classes="sys-info-icon",
-            markup=icon
-        )
-
+        self.network_status_icon = Label(style_classes="sys-info-icon", markup=icon)
 
         if not connection_name:
             self.network_status_bar.remove_style_class("connected")

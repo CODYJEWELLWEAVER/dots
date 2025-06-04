@@ -61,5 +61,5 @@ holidays = {
     "Christmas Day": "&#xed78;",
     "New Year's Day": "&#xfd9c;",
     "Memorial Day": "&#xf580;",
-    "Veterans Day": "&#xea2c;"
+    "Veterans Day": "&#xea2c;",
 }

@@ -20,86 +20,61 @@ from gi.repository import Playerctl
 Status bar for shell.
 """
 
+
 class Bar(Window):
-    def __init__(
-            self,
-            control_panel: ControlPanel, 
-            **kwargs
-        ):
+    def __init__(self, control_panel: ControlPanel, **kwargs):
         super().__init__(
             name="bar",
             layer="top",
             anchor="left top right",
             exclusivity="auto",
-            **kwargs
+            **kwargs,
         )
 
-
         self.control_panel = control_panel
-
 
         self.player_manager = Playerctl.PlayerManager()
         self.media = MediaControl(self.player_manager)
 
-
         self.power = PowerControl()
-
 
         self.weather_info = WeatherInfo()
 
-        
         self.cpu_usage = CPUUsage()
         self.gpu_usage = GPUUsage()
         self.ram = RAM()
         self.disk = Disk()
         self.network = Network()
 
-
         self.workspaces = Workspaces(
             name="workspaces",
-            buttons=[
-                WorkspaceButton(workspace_id)
-                for workspace_id in range(1, 10)
-            ]
+            buttons=[WorkspaceButton(workspace_id) for workspace_id in range(1, 10)],
         )
-
 
         self.date_time = DateTime(
             formatters="%I:%M %p",
             name="date-time",
         )
 
-
         self.control_panel_expander = EventBox(
             events="enter-notify",
             child=Box(
                 name="expander-box",
                 children=[
-                    Corner(
-                        orientation="top-right",
-                        name="left-corner",
-                        size=(75, 25)
-                    ),
+                    Corner(orientation="top-right", name="left-corner", size=(75, 25)),
                     self.date_time,
-                    Corner(
-                        orientation="top-left",
-                        name="right-corner",
-                        size=(75, 25)
-                    )
-                ]
-            )
+                    Corner(orientation="top-left", name="right-corner", size=(75, 25)),
+                ],
+            ),
         )
 
-
-        self.control_panel_expander.connect("enter-notify-event", self.show_control_panel)
-
+        self.control_panel_expander.connect(
+            "enter-notify-event", self.show_control_panel
+        )
 
         self.children = CenterBox(
             v_align="center",
-            start_children=[
-                self.workspaces,
-                self.media    
-            ],
+            start_children=[self.workspaces, self.media],
             center_children=self.control_panel_expander,
             end_children=[
                 self.weather_info,
@@ -108,10 +83,9 @@ class Bar(Window):
                 self.ram,
                 self.disk,
                 self.network,
-                self.power
-            ]
+                self.power,
+            ],
         )
-
 
     def show_control_panel(self, *args):
         self.control_panel.show()

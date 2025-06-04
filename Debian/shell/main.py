@@ -16,15 +16,11 @@ if __name__ == "__main__":
     app = Application(APP_NAME, bar, control_panel, open_inspector=False)
 
     def apply_stylesheet(*_):
-        return app.set_stylesheet_from_file(
-        get_relative_path("main.css")
-    )
+        return app.set_stylesheet_from_file(get_relative_path("main.css"))
 
     style_monitor = monitor_file(get_relative_path("./styles"))
     style_monitor.connect("changed", apply_stylesheet)
 
-    app.set_stylesheet_from_file(
-        get_relative_path("main.css")
-    )
+    app.set_stylesheet_from_file(get_relative_path("main.css"))
 
     app.run()

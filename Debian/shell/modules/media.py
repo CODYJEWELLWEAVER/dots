@@ -4,7 +4,6 @@ from fabric.widgets.label import Label
 from fabric.widgets.button import Button
 from fabric.audio.service import Audio
 from fabric.widgets.wayland import WaylandWindow as Window
-from fabric.widgets.image import Image
 from fabric.widgets.scale import Scale
 from fabric.core.fabricator import Fabricator
 from fabric.utils import truncate, bulk_connect
@@ -12,6 +11,7 @@ from fabric.utils import truncate, bulk_connect
 from gi.repository import Playerctl, GdkPixbuf
 
 import pulsectl
+from loguru import logger
 
 from widgets.custom_image import CustomImage
 from util.ui import add_hover_cursor, toggle_visible
@@ -30,14 +30,13 @@ class MediaControl(Box):
             spacing=10,
             v_align="center",
             h_align="center",
-            **kwargs
+            **kwargs,
         )
 
         self.manager = manager
         self.audio = Audio()
         self.pulse = pulsectl.Pulse()
         self.media_panel = MediaPanel()
-
 
         self.title = Label(
             name="info-box-title",
@@ -50,50 +49,34 @@ class MediaControl(Box):
             orientation="v",
             v_align="center",
             h_align="center",
-            children=[
-                self.title,
-                self.artist
-            ]
+            children=[self.title, self.artist],
         )
         self.media_info = EventBox(
-            child=self.info_box,
-            visible=False,
-            events=["enter-notify", "leave-notify"]
+            child=self.info_box, visible=False, events=["enter-notify", "leave-notify"]
         )
-
 
         bulk_connect(
-            self.media_info, 
+            self.media_info,
             {
                 "enter-notify-event": self.show_media_info_panel,
-                "leave-notify-event": self.hide_media_info_panel
-            }
+                "leave-notify-event": self.hide_media_info_panel,
+            },
         )
 
-
         self.output_control = Button(
-            child=Label(
-                style_classes="media-control-icon",
-                markup=icons.speaker
-            ),
-            on_clicked=self.swap_audio_sink
+            child=Label(style_classes="media-control-icon", markup=icons.speaker),
+            on_clicked=self.swap_audio_sink,
         )
         add_hover_cursor(self.output_control)
 
-        
         self.prev_track_control = Button(
-            child=Label(
-                style_classes="media-control-icon",
-                markup=icons.skip_prev
-            ),
-            on_clicked=self.skip_to_prev_track
+            child=Label(style_classes="media-control-icon", markup=icons.skip_prev),
+            on_clicked=self.skip_to_prev_track,
         )
         add_hover_cursor(self.prev_track_control)
 
-
         self.play_control_label = Label(
-            style_classes="media-control-icon",
-            markup=icons.play
+            style_classes="media-control-icon", markup=icons.play
         )
         self.play_control = Button(
             child=self.play_control_label,
@@ -101,16 +84,11 @@ class MediaControl(Box):
         )
         add_hover_cursor(self.play_control)
 
-
         self.next_track_control = Button(
-            child=Label(
-                style_classes="media-control-icon",
-                markup=icons.skip_next
-            ),
-            on_clicked=self.skip_to_next_track
+            child=Label(style_classes="media-control-icon", markup=icons.skip_next),
+            on_clicked=self.skip_to_next_track,
         )
         add_hover_cursor(self.next_track_control)
-
 
         self.volume_scale = Scale(
             name="volume-scale",
@@ -120,13 +98,11 @@ class MediaControl(Box):
         self.volume_scale.connect("change-value", self.on_volume_slider_value_change)
         add_hover_cursor(self.volume_scale)
 
-
         self.pulse_volume_fab = Fabricator(
             poll_from=self.get_pulse_volume,
             interval=100,
-            on_changed=self.set_volume_scale_value
+            on_changed=self.set_volume_scale_value,
         )
-
 
         self.children = [
             self.media_info,
@@ -134,41 +110,33 @@ class MediaControl(Box):
             self.prev_track_control,
             self.play_control,
             self.next_track_control,
-            self.volume_scale   
+            self.volume_scale,
         ]
-
 
         for name in manager.props.player_names:
             self.init_player(name)
 
-
         manager.connect("name-appeared", self.on_name_appeared)
-
 
         self.audio.connect("speaker_changed", self.on_speaker_changed)
 
-
     def set_volume_scale_value(self, fabricator, value):
         self.volume_scale.value = value
-
 
     def toggle_play_pause(self, *args):
         players = self.manager.props.players
         if players:
             players[0].play_pause()
 
-
     def skip_to_prev_track(self, *args):
         players = self.manager.props.players
         if players:
             players[0].previous()
 
-
     def skip_to_next_track(self, *args):
         players = self.manager.props.players
         if players:
             players[0].next()
-            
 
     def init_player(self, name):
         player = Playerctl.Player.new_from_name(name)
@@ -178,30 +146,21 @@ class MediaControl(Box):
         player.connect("metadata", self.on_metadata, self.manager)
         self.manager.manage_player(player)
 
-
     def on_play(self, player, status, manager):
-        label = Label(
-            style_classes="media-control-icon",
-            markup=icons.pause
-        )
+        label = Label(style_classes="media-control-icon", markup=icons.pause)
 
         self.play_control.children = label
-
 
     def on_pause(self, player, status, manager):
-        label = Label(
-            style_classes="media-control-icon",
-            markup=icons.play
-        )
+        label = Label(style_classes="media-control-icon", markup=icons.play)
 
         self.play_control.children = label
-
 
     def on_metadata(self, player, metadata, manager):
         """
         Update media info on bar and on media panel
         """
-        if "xesam:title" in metadata.keys() and metadata['xesam:title'] != "":
+        if "xesam:title" in metadata.keys() and metadata["xesam:title"] != "":
             self.media_info.set_property("visible", True)
 
             title_str = metadata["xesam:title"]
@@ -216,7 +175,7 @@ class MediaControl(Box):
             self.title.set_property("visible", False)
             self.media_panel.title.set_property("visible", False)
 
-        if "xesam:artist" in metadata.keys() and metadata['xesam:artist'] != [""]:
+        if "xesam:artist" in metadata.keys() and metadata["xesam:artist"] != [""]:
             self.media_info.set_property("visible", True)
 
             artist_str = metadata["xesam:artist"][0]
@@ -235,8 +194,12 @@ class MediaControl(Box):
             self.artist.set_property("visible", False)
             self.media_panel.artist.set_property("visible", False)
 
-        if "xesam:title" in metadata.keys() and metadata['xesam:title'] == "" and \
-                "xesam:artist" in metadata.keys() and metadata['xesam:artist'] == [""]:
+        if (
+            "xesam:title" in metadata.keys()
+            and metadata["xesam:title"] == ""
+            and "xesam:artist" in metadata.keys()
+            and metadata["xesam:artist"] == [""]
+        ):
             self.media_info.set_property("visible", False)
 
         if "xesam:album" in metadata.keys() and metadata["xesam:album"] != "":
@@ -244,26 +207,21 @@ class MediaControl(Box):
             self.media_panel.album.set_property("visible", True)
         else:
             self.media_panel.album.set_property("visible", False)
-        
+
         if "mpris:artUrl" in metadata.keys():
             file_path = get_file_path_from_mpris_url(metadata["mpris:artUrl"])
             self_width = self.get_preferred_width().natural_width
             art_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
-                file_path, 
-                self_width - 60, 
-                self_width - 60, 
-                True
+                file_path, self_width - 60, self_width - 60, True
             )
             self.media_panel.art.set_property("pixbuf", art_pixbuf)
             self.media_panel.art.set_property("visible", True)
         else:
             self.media_panel.art.set_property("visible", False)
 
-
     def on_name_appeared(self, manager, name):
-        """ Automatically add new players to manager. """
+        """Automatically add new players to manager."""
         self.init_player(name)
-
 
     def on_speaker_changed(self, service):
         if service.speaker.name in HEADPHONES:
@@ -271,16 +229,12 @@ class MediaControl(Box):
         else:
             icon = icons.speaker
 
-        label = Label(
-            style_classes="media-control-icon",
-            markup=icon
-        )
+        label = Label(style_classes="media-control-icon", markup=icon)
 
         self.output_control.children = label
 
-    
     def swap_audio_sink(self, button):
-        """ 
+        """
         Changes audio output by rotating through the sinks
         detected by pulse audio.
         """
@@ -294,9 +248,8 @@ class MediaControl(Box):
         try:
             new_sink = self.pulse.get_sink_by_name(new_sink_name)
             self.pulse.sink_default_set(new_sink)
-        except:
-            pass
-
+        except pulsectl.pulsectl.PulseIndexError:
+            logger.error(f"Could not set default sink: {new_sink_name}")
 
     def on_volume_slider_value_change(self, widget, event, value):
         if value < 0:
@@ -314,15 +267,12 @@ class MediaControl(Box):
         sink_volume.value_flat = value
         self.pulse.sink_volume_set(sink.index, sink_volume)
 
-
     def get_pulse_volume(self, *args):
         sink = self.pulse.sink_default_get()
         return 0 if sink.mute else sink.volume.value_flat
 
-
     def show_media_info_panel(self, *args):
         toggle_visible(self.media_panel)
-
 
     def hide_media_info_panel(self, *args):
         toggle_visible(self.media_panel)
@@ -337,40 +287,26 @@ class MediaPanel(Window):
             exclusivity="none",
             visible=False,
             margin="20px 0px 0px 302px",
-            **kwargs
+            **kwargs,
         )
 
-
-        self.art = CustomImage(
-            name="media-art",
-            visible=False
-        )
-
+        self.art = CustomImage(name="media-art", visible=False)
 
         self.title = Label(
-            style_classes="media-info-panel-text",
-            visible=False,
-            line_wrap="word"
+            style_classes="media-info-panel-text", visible=False, line_wrap="word"
         )
-        
 
         self.artist = Label(
-            style_classes="media-info-panel-text",
-            visible=False,
-            line_wrap="word"
+            style_classes="media-info-panel-text", visible=False, line_wrap="word"
         )
-
 
         self.album = Label(
-            style_classes="media-info-panel-text",
-            visible=False,
-            line_wrap="word"
+            style_classes="media-info-panel-text", visible=False, line_wrap="word"
         )
-
 
         self.box = Box(
             name="media-info-panel-box",
-            orientation='v',
+            orientation="v",
             v_align="center",
             spacing=10,
             children=[
@@ -378,13 +314,12 @@ class MediaPanel(Window):
                     name="media-art-box",
                     children=self.art,
                     v_expand=True,
-                    h_expand=True
+                    h_expand=True,
                 ),
                 self.title,
                 self.artist,
-                self.album
-            ]
+                self.album,
+            ],
         )
-
 
         self.children = self.box

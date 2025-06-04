@@ -7,6 +7,7 @@ from gi.repository import Gtk
 
 ### CREDIT TO ITS_DARSH: https://github.com/its-darsh
 
+
 class CustomImage(Image):
     def do_render_rectangle(
         self, cr: cairo.Context, width: int, height: int, radius: int = 0

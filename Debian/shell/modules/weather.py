@@ -6,8 +6,6 @@ from services.weather import WeatherService
 
 import config.icons as icons
 
-import time
-
 
 SECONDS_PER_DAY = 86400
 SECONDS_PER_HOUR = 3600
@@ -20,53 +18,39 @@ class WeatherInfo(Box):
             spacing=10,
             v_align="center",
             h_align="center",
-            **kwargs
+            **kwargs,
         )
-
 
         self.hide()
 
-
         self.service = WeatherService.get_instance()
-
 
         bulk_connect(
             self.service,
             {
                 "notify::status": self.on_status_changed,
                 "notify::group": self.on_group_changed,
-                "notify::temperature": self.on_temperature_changed
-            }
+                "notify::temperature": self.on_temperature_changed,
+            },
         )
 
-
         self.weather_icon = Label(
-            style_classes="weather-icon",
-            markup=icons.weather["Clear-Day"]
+            style_classes="weather-icon", markup=icons.weather["Clear-Day"]
         )
         self.temperature = Label(
             name="weather-temp",
             label="",
         )
         self.temperature_icon = Label(
-            style_classes="weather-icon",
-            markup=icons.fahrenheit
+            style_classes="weather-icon", markup=icons.fahrenheit
         )
-
 
         # run callbacks to initialize
         self.on_status_changed(self.service, None)
         self.on_group_changed(self.service, None)
         self.on_temperature_changed(self.service, None)
 
-
-        self.children = [
-            self.weather_icon,
-            self.temperature,
-            self.temperature_icon
-        ]
-
-
+        self.children = [self.weather_icon, self.temperature, self.temperature_icon]
 
     def on_status_changed(self, service, _):
         if service.status:
@@ -74,21 +58,15 @@ class WeatherInfo(Box):
         else:
             self.hide()
 
-
     def on_group_changed(self, service, _):
         icon = self.lookup_weather_icon(service.group)
 
-        if icon != None:
-            self.weather_icon = Label(
-                style_classes="weather-icon",
-                markup=icon
-            )
-
+        if icon is not None:
+            self.weather_icon = Label(style_classes="weather-icon", markup=icon)
 
     def on_temperature_changed(self, service, _):
         self.temperature.set_property("label", str(service.temperature))
 
-    
     def lookup_weather_icon(self, group):
         if group in icons.weather:
             return icons.weather[group]
