@@ -2,8 +2,9 @@ from typing import Iterable
 from fabric.widgets.box import Box
 from fabric.widgets.label import Label
 from fabric.widgets.button import Button
+from fabric.widgets.scrolledwindow import ScrolledWindow
 
-from services.calendar import Calendar as CalendarService
+from services.calendar import Calendar as CalendarService, USER_BIRTHDAY_IDENFIFIER
 
 import config.icons as icons
 from util.ui import add_hover_cursor, toggle_visible
@@ -15,7 +16,6 @@ class Calendar(Box):
             name="calendar",
             orientation="v",
             spacing=10,
-            h_expand=True,
             h_align="center",
             v_align="center",
             **kwargs
@@ -26,20 +26,20 @@ class Calendar(Box):
 
 
         self.day_label = Label(
-            name="day-label",
+            style_classes="calendar-date-label",
             label=self.service.selected_day,
             visible=False
         )
 
 
         self.month_label = Label(
-            name="month-label",
+            style_classes="calendar-date-label",
             label=self.service.selected_month
         )
 
 
         self.year_label = Label(
-            name="year-label",
+            style_classes="calendar-date-label",
             label=self.service.selected_year
         )
 
@@ -98,14 +98,15 @@ class Calendar(Box):
         )
 
 
-        self.day_view = Box(
+        self.day_view_list = Box(orientation="v", h_expand=True)
+        self.day_view = ScrolledWindow(
             name="day-view",
-            h_align="center",
+            h_align="fill",
             h_expand=True,
             v_expand=True,
-            orientation="v",
-            children=[
-            ],
+            propagate_height=True,
+            propagate_width=True,
+            child=self.day_view_list,
             visible=False
         )
 
@@ -196,9 +197,51 @@ class Calendar(Box):
         return months
     
 
+    def add_holidays_to_day_view(self):
+        holiday_names = self.service.holidays
+
+        for holiday in holiday_names:
+            if USER_BIRTHDAY_IDENFIFIER in holiday:
+                user_age = holiday.split()[1]
+                holiday = f"Your {user_age} Birthday!"
+
+            holiday_icon = self.get_holiday_icon(holiday)
+
+            self.day_view_list.add(
+                Box(
+                    spacing=20,
+                    orientation="h",
+                    h_expand=True,
+                    style_classes="holiday-box",
+                    children=[
+                        Label(
+                            style_classes="holiday-icon",
+                            markup=holiday_icon                            
+                        ),
+                        Label(
+                            style_classes="holiday-name",
+                            label=holiday,
+                            line_wrap="char"
+                        )
+                    ]
+                )
+            )
+
+
+    def get_holiday_icon(self, holiday_name):
+        if "Birthday" and "User" in holiday_name:
+            return icons.holidays["User Birthday"]
+        elif holiday_name in icons.holidays:
+            return icons.holidays[holiday_name]
+        else:
+            return icons.holidays["Default"]
+            
+
     def do_select_prev(self, button):
         if self.day_calendar.is_visible():
             self.service.select_prev_month()
+        elif self.day_view.is_visible():
+            self.service.select_prev_day()
         else:
             self.service.select_prev_year()
 
@@ -206,6 +249,8 @@ class Calendar(Box):
     def do_select_next(self, button):
         if self.day_calendar.is_visible():
             self.service.select_next_month()
+        elif self.day_view.is_visible():
+            self.service.select_next_day()
         else:
             self.service.select_next_year()
 
@@ -236,6 +281,8 @@ class Calendar(Box):
     def on_selected_date_changed(self, service: CalendarService, _):
         self.day_calendar.children = self.get_day_buttons()
         self.month_calendar.children = self.get_month_buttons()
+        self.day_view_list.children = [] # clear children in day view
+        self.add_holidays_to_day_view()
         self.month_label.set_property("label", service.selected_month)
         self.year_label.set_property("label", service.selected_year)
         self.day_label.set_property("label", service.selected_day)

@@ -4,6 +4,7 @@ from fabric.utils.helpers import invoke_repeater
 
 from util.helpers import get_country_code
 from util.singleton import Singleton
+from config.calendar import USER_BIRTHDAY, FIRST_WEEK_DAY, UPDATE_INTERVAL
 
 from datetime import date as Date
 import calendar
@@ -11,24 +12,26 @@ from calendar import Calendar as PyCalendar
 import holidays
 
 
+USER_BIRTHDAY_IDENFIFIER = "User-Birthday"
+
+
 class Calendar(Service, Singleton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-
         self._country_code = get_country_code()
         self._today = Date.today()
-        self._calendar = PyCalendar(firstweekday=6)
+        self._calendar = PyCalendar(firstweekday=FIRST_WEEK_DAY)
         self._selected_date = self._today
         self._holidays = holidays.country_holidays(self._country_code)
-
+        self._user_birthday = Date.fromisoformat(USER_BIRTHDAY)
 
         # TODO: Find a more efficient way to check this?
         # check every minute for change of date
-        invoke_repeater(60000, self.update_today) # 60 seconds
+        invoke_repeater(UPDATE_INTERVAL, self.update_today) # 60 seconds
 
 
-    @Property(Date, flags="readable")
+    @Property(Date, flags="read-write")
     def today(self) -> Date:
         return self._today
     
@@ -75,6 +78,25 @@ class Calendar(Service, Singleton):
         return str(self.selected_date.year)
     
 
+    @Property(Iterable[str], flags="readable")
+    def holidays(self) -> list[str]:
+        date = self.selected_date
+        holidays = []
+
+        if date in self._holidays:
+            holidays.append(self._holidays[date])
+
+        if date.month == self._user_birthday.month \
+                and date.day == self._user_birthday.day:
+            user_age = date.year - self._user_birthday.year
+            suffix = self.get_ordinal_suffix(user_age)
+            holidays.append(
+                f"{USER_BIRTHDAY_IDENFIFIER} {user_age}{suffix}"
+            )
+
+        return holidays
+    
+
     def get_month_name(self, month: int) -> str:
         return calendar.month_name[month]
     
@@ -88,13 +110,6 @@ class Calendar(Service, Singleton):
             return "rd"
         else:
             return "th"
-
-
-    def get_holiday(self, date: Date) -> str | None:
-        if date in self._holidays:
-            return self._holidays[Date]
-        else:
-            return None
         
 
     def update_today(self) -> bool:
@@ -140,6 +155,20 @@ class Calendar(Service, Singleton):
         month = self.today.month if year == self.today.year else 1
         # if jumping to current year, select today, else select first day of year
         self.selected_date = Date(year, month, day)
+
+
+    def select_prev_day(self) -> None:
+        calendar = self.month_calendar
+        selected_date_idx = calendar.index(self.selected_date)
+        prev_day = calendar[selected_date_idx - 1]
+        self.selected_date = prev_day
+
+
+    def select_next_day(self) -> None:
+        calendar = self.month_calendar
+        selected_date_idx = calendar.index(self.selected_date)
+        next_day = calendar[selected_date_idx + 1]
+        self.selected_date = next_day
 
 
     def select_month(self, month: int) -> None:

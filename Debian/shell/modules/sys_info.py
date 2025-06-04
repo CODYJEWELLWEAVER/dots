@@ -103,6 +103,7 @@ class Disk(Box):
         )
 
 
+# TODO: Change this to use Gio.NetworkMonitor?
 class Network(Box):
     def __init__(self, **kwargs):
         super().__init__(

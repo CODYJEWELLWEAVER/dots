@@ -54,3 +54,12 @@ weather = {
     "Snow": "&#xea73;",
     "Atmosphere": "&#xec30;",
 }
+
+holidays = {
+    "Default": "&#xee46;",
+    "User Birthday": "&#xf00f;",
+    "Christmas Day": "&#xed78;",
+    "New Year's Day": "&#xfd9c;",
+    "Memorial Day": "&#xf580;",
+    "Veterans Day": "&#xea2c;"
+}

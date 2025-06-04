@@ -61,17 +61,20 @@ class ControlPanel(Window):
 
         self.children = Box(
             children=[
-                Corner(
-                    "top-right",
-                    name="control-panel-left-corner",
-                    size=(225, 75)
+                Box(
+                    style_classes="corner-box",
+                    children=Corner(
+                        "top-right",
+                        name="left-corner",
+                        size=(225, 75)
+                    )
                 ),
                 Box(
                     name="control-panel-box",
                     orientation="v",
                     children=[
                         Box(
-                            spacing = 10,
+                            spacing=40,
                             orientation="h",
                             children=[
                                 Box(
@@ -97,10 +100,13 @@ class ControlPanel(Window):
                         )
                     ]
                 ),
-                Corner(
-                    "top-left",
-                    name="control-panel-left-corner",
-                    size=(225, 75)
+                Box(
+                    style_classes="corner-box",
+                    children=Corner(
+                        "top-left",
+                        name="right-corner",
+                        size=(225, 75)
+                    )
                 ),
             ]
         )
