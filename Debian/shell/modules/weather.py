@@ -90,21 +90,6 @@ class WeatherInfo(Box):
 
     
     def lookup_weather_icon(self, group):
-        if group == "Clear":
-            epoch_time = time.time()
-            if time.daylight != 0:
-                tz_offset = time.altzone
-            else:
-                tz_offset = time.timezone
-
-            day_time = (epoch_time - tz_offset) % SECONDS_PER_DAY
-
-            #             5AM                  8PM
-            if day_time < 18000 or day_time >= 72000:
-                group = "Clear-Night"
-            else:
-                group = "Clear-Day"
-
         if group in icons.weather:
             return icons.weather[group]
         else:

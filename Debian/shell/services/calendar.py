@@ -61,7 +61,8 @@ class Calendar(Service, Singleton):
 
     @Property(str, flags="readable")
     def selected_day(self) -> str:
-        return str(self.selected_date.day)
+        suffix = self.get_ordinal_suffix(self.selected_date.day)
+        return str(self.selected_date.day) + suffix
     
 
     @Property(str, flags="readable")
@@ -76,6 +77,17 @@ class Calendar(Service, Singleton):
 
     def get_month_name(self, month: int) -> str:
         return calendar.month_name[month]
+    
+
+    def get_ordinal_suffix(self, day: int):
+        if day == 1:
+            return "st"
+        elif day == 2:
+            return "nd"
+        elif day == 3:
+            return "rd"
+        else:
+            return "th"
 
 
     def get_holiday(self, date: Date) -> str | None:

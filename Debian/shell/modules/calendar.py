@@ -25,6 +25,13 @@ class Calendar(Box):
         self.service = CalendarService.get_instance()  
 
 
+        self.day_label = Label(
+            name="day-label",
+            label=self.service.selected_day,
+            visible=False
+        )
+
+
         self.month_label = Label(
             name="month-label",
             label=self.service.selected_month
@@ -64,6 +71,7 @@ class Calendar(Box):
                 h_align="center",
                 children=[
                     self.month_label,
+                    self.day_label,
                     self.year_label
                 ]
             ),
@@ -86,13 +94,6 @@ class Calendar(Box):
             spacing=2,
             h_align="center",
             children=self.get_month_buttons(),
-            visible=False
-        )
-
-
-        self.day_label = Label(
-            name="day-label",
-            label=self.get_day_string(),
             visible=False
         )
 
@@ -150,7 +151,8 @@ class Calendar(Box):
                             day=date.day,
                             in_cur_month=date.month == self.service.selected_date.month,
                             name="today" if date == self.service.today else "",
-                            on_clicked=lambda b, day=date.day: self.do_select_day(day)
+                            on_clicked=lambda b, date=date: 
+                                self.do_select_day(date)
                         )
                         for date
                         in month_calendar[i:min(i+7,len(month_calendar))]
@@ -194,14 +196,6 @@ class Calendar(Box):
         return months
     
 
-    def get_day_string(self) -> str:
-        day = self.service.selected_day
-        month = self.service.selected_month
-        year = self.service.selected_year
-
-        return f"{month} {day} {year}"
-    
-
     def do_select_prev(self, button):
         if self.day_calendar.is_visible():
             self.service.select_prev_month()
@@ -221,16 +215,18 @@ class Calendar(Box):
         self.do_swap_calendar()
 
 
-    def do_select_day(self, day):
-        self.service.select_day(day)
-        self.day_calendar.set_visible(False)
-        self.day_view.set_visible(True)
+    def do_select_day(self, date):
+        self.service.selected_date = date
+        toggle_visible(self.day_label)
+        toggle_visible(self.day_calendar)
+        toggle_visible(self.day_view)
 
 
     def do_swap_calendar(self, *args):
         if self.day_view.is_visible():
             toggle_visible(self.day_calendar)
             toggle_visible(self.day_view)
+            toggle_visible(self.day_label)
         else:
             toggle_visible(self.day_calendar)
             toggle_visible(self.month_calendar)
@@ -242,6 +238,7 @@ class Calendar(Box):
         self.month_calendar.children = self.get_month_buttons()
         self.month_label.set_property("label", service.selected_month)
         self.year_label.set_property("label", service.selected_year)
+        self.day_label.set_property("label", service.selected_day)
     
 
 class DayButton(Button):

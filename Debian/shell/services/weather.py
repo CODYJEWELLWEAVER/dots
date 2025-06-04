@@ -7,6 +7,7 @@ from gi.repository import GLib
 import asyncio
 import aiohttp
 from loguru import logger
+import time
 
 from config.weather import WEATHER_API_URL
 
@@ -69,6 +70,13 @@ class WeatherService(Service, Singleton):
                 
                 weather_group = response["weather"][0]["main"]
                 current_temperature = response["main"]["temp"]
+
+                sunrise = response["sys"]["sunrise"]
+                sunset = response["sys"]["sunset"]
+                if sunrise <= time.time() <= sunset and weather_group == "Clear":
+                    weather_group = "Clear-Day"
+                else:
+                    weather_group = "Clear-Night"
 
                 self.group = weather_group
                 self.temperature = current_temperature
