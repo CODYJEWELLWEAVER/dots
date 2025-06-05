@@ -38,7 +38,7 @@ class Bar(Window):
 
         self.power = PowerControl()
 
-        self.weather_info = WeatherInfo()
+        self.weather_info = WeatherInfo(size="small")
 
         self.cpu_usage = CPUUsage()
         self.gpu_usage = GPUUsage()

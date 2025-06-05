@@ -4,9 +4,14 @@ from fabric.utils import get_relative_path, monitor_file
 from modules.bar import Bar
 from modules.control_panel import ControlPanel
 
+import asyncio
+from gi.events import GLibEventLoopPolicy
+
 
 if __name__ == "__main__":
     APP_NAME = "Fabric-Shell"
+
+    asyncio.set_event_loop_policy(GLibEventLoopPolicy())
 
     setproctitle.setproctitle(APP_NAME)
 

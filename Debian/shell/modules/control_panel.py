@@ -9,6 +9,7 @@ from modules.calendar import Calendar
 from widgets.custom_image import CustomImage
 from config.profile import PROFILE_IMAGE_PATH
 from util.helpers import get_system_node_name, get_user_login_name
+from services.network import NetworkService
 
 from gi.repository import GdkPixbuf
 
@@ -27,8 +28,11 @@ class ControlPanel(Window):
             kwargs=kwargs,
         )
 
+        net = NetworkService.get_instance()
+
         self.profile_image = Box(
             name="profile-image-box",
+            h_align="center",
             children=ProfileImage(200, 200),
         )
 
@@ -42,9 +46,7 @@ class ControlPanel(Window):
             name="control-panel-time",
         )
 
-        # TODO: Add specific weather widget for control panel with
-        # forecast and more information.
-        self.weather_info = WeatherInfo(bar=False)
+        self.weather_info = WeatherInfo(size="large")
 
         self.calendar = Calendar()
 
@@ -79,7 +81,7 @@ class ControlPanel(Window):
                                     orientation="v",
                                     spacing=20,
                                     h_align="center",
-                                    children=[self.calendar],
+                                    children=self.calendar,
                                 ),
                             ],
                         )

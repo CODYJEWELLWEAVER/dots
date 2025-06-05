@@ -4,7 +4,10 @@ from fabric.widgets.label import Label
 from fabric.widgets.button import Button
 from fabric.widgets.scrolledwindow import ScrolledWindow
 
-from services.calendar import Calendar as CalendarService, USER_BIRTHDAY_IDENFIFIER
+from services.calendar import (
+    CalendarService as CalendarService,
+    USER_BIRTHDAY_IDENFIFIER,
+)
 
 import config.icons as icons
 from util.ui import add_hover_cursor, toggle_visible

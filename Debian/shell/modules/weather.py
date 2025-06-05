@@ -1,6 +1,9 @@
+from typing import Literal
 from fabric.widgets.box import Box
 from fabric.widgets.label import Label
 from fabric.utils.helpers import bulk_connect
+
+from gi.repository import GObject
 
 from services.weather import WeatherService
 
@@ -11,11 +14,21 @@ SECONDS_PER_DAY = 86400
 SECONDS_PER_HOUR = 3600
 
 
+def lookup_weather_icon(group):
+    if group in icons.weather:
+        return icons.weather[group]
+    else:
+        return None
+
+
 class WeatherInfo(Box):
-    def __init__(self, bar=True, **kwargs):
+    def __init__(self, size: Literal["large", "small"], **kwargs):
         super().__init__(
-            name="weather-info" if bar else "",
+            style_classes="weather-info-small"
+            if size == "small"
+            else "weather-info-large",
             spacing=10,
+            orientation="h" if size == "small" else "v",
             v_align="center",
             h_align="center",
             **kwargs,
@@ -34,11 +47,17 @@ class WeatherInfo(Box):
             },
         )
 
-        self.weather_icon = Label(
-            style_classes="weather-icon", markup=icons.weather["Clear-Day"]
+        if size == "large":
+            self.service.connect("notify::description", self.on_description_changed)
+            self.description = Label(style_classes="weather-info-label", label="")
+
+        self.weather_icon_box = Box(
+            children=Label(
+                style_classes="weather-icon", markup=icons.weather["Clear-Day"]
+            )
         )
         self.temperature = Label(
-            name="weather-temp",
+            style_classes="weather-info-label",
             label="",
         )
         self.temperature_icon = Label(
@@ -46,11 +65,30 @@ class WeatherInfo(Box):
         )
 
         # run callbacks to initialize
-        self.on_status_changed(self.service, None)
-        self.on_group_changed(self.service, None)
-        self.on_temperature_changed(self.service, None)
+        self.on_status_changed(self.service, GObject.ParamSpecBoolean())
+        self.on_group_changed(self.service, GObject.ParamSpecString())
+        self.on_temperature_changed(self.service, GObject.ParamSpecInt())
 
-        self.children = [self.weather_icon, self.temperature, self.temperature_icon]
+        if size == "small":
+            children = [self.weather_icon_box, self.temperature, self.temperature_icon]
+        else:
+            # initialize description label
+            self.on_description_changed(self.service, GObject.ParamSpecString())
+            children = [
+                Box(
+                    spacing=10,
+                    orientation="h",
+                    h_align="center",
+                    children=[
+                        self.weather_icon_box,
+                        self.temperature,
+                        self.temperature_icon,
+                    ],
+                ),
+                self.description,
+            ]
+
+        self.children = children
 
     def on_status_changed(self, service, _):
         if service.status:
@@ -59,16 +97,15 @@ class WeatherInfo(Box):
             self.hide()
 
     def on_group_changed(self, service, _):
-        icon = self.lookup_weather_icon(service.group)
+        icon = lookup_weather_icon(service.group)
 
         if icon is not None:
-            self.weather_icon = Label(style_classes="weather-icon", markup=icon)
+            self.weather_icon_box.children = Label(
+                style_classes="weather-icon", markup=icon
+            )
 
     def on_temperature_changed(self, service, _):
         self.temperature.set_property("label", str(service.temperature))
 
-    def lookup_weather_icon(self, group):
-        if group in icons.weather:
-            return icons.weather[group]
-        else:
-            return None
+    def on_description_changed(self, service, _):
+        self.description.set_property("label", service.description)

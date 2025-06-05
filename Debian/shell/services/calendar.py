@@ -15,7 +15,7 @@ import holidays
 USER_BIRTHDAY_IDENFIFIER = "User-Birthday"
 
 
-class Calendar(Service, Singleton):
+class CalendarService(Service, Singleton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

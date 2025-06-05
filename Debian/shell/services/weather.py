@@ -15,8 +15,10 @@ class WeatherService(Service, Singleton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        self._loop = asyncio.get_event_loop()
+
         self._status = True
-        self._group = ("",)
+        self._group = ""
         self._description = ""
         self._temperature = 0.0
 
@@ -27,8 +29,16 @@ class WeatherService(Service, Singleton):
         return self._group
 
     @group.setter
-    def group(self, new_group):
+    def group(self, new_group: str):
         self._group = new_group
+
+    @Property(str, flags="read-write")
+    def description(self) -> str:
+        return self._description
+
+    @description.setter
+    def description(self, new_description: str):
+        self._description = new_description
 
     @Property(int, flags="read-write")
     def temperature(self) -> int:
@@ -59,25 +69,31 @@ class WeatherService(Service, Singleton):
 
                 response = await response.json()
 
-                weather_group = response["weather"][0]["main"]
+                weather = response["weather"][0]
+                weather_group = weather["main"]
                 current_temperature = response["main"]["temp"]
+                weather_description = weather["description"]
 
                 sunrise = response["sys"]["sunrise"]
                 sunset = response["sys"]["sunset"]
-                if sunrise <= time.time() <= sunset and weather_group == "Clear":
+                cur_time = time.time()
+                if sunrise <= cur_time <= sunset and weather_group == "Clear":
                     weather_group = "Clear-Day"
                 else:
                     weather_group = "Clear-Night"
 
+                logger.debug(f"Weather group: {weather_group}")
+
                 self.group = weather_group
+                self.description = weather_description
                 self.temperature = current_temperature
 
                 return True
 
     def start(self):
-        asyncio.run(self.retrieve_data())
+        self._loop.create_task(self.retrieve_data())
 
         GLib.timeout_add_seconds(
             120,  # 2 min
-            lambda *_: asyncio.run(self.retrieve_data()),
+            lambda *_: self._loop.create_task(self.retrieve_data()),
         )
