@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import List
 from fabric.core.service import Service, Property
 from fabric.utils.helpers import invoke_repeater
 
@@ -46,8 +46,8 @@ class CalendarService(Service, Singleton):
     def selected_date(self, new_date: Date) -> None:
         self._selected_date = new_date
 
-    @Property(Iterable[Date], flags="readable")
-    def month_calendar(self) -> Iterable[Date]:
+    @Property(List[Date], flags="readable")
+    def month_calendar(self) -> List[Date]:
         return [
             date
             for date in self._calendar.itermonthdates(
@@ -72,7 +72,7 @@ class CalendarService(Service, Singleton):
     def selected_year(self) -> str:
         return str(self.selected_date.year)
 
-    @Property(Iterable[str], flags="readable")
+    @Property(List[str], flags="readable")
     def holidays(self) -> list[str]:
         date = self.selected_date
         holidays = []

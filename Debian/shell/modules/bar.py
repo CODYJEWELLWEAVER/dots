@@ -9,7 +9,7 @@ from fabric.hyprland.widgets import WorkspaceButton, Workspaces
 from modules.control_panel import ControlPanel
 from modules.media import MediaControl
 from modules.power import PowerControl
-from modules.sys_info import CPUUsage, GPUUsage, RAM, Disk, Network
+from modules.sys_info import CPUUsage, GPUUsage, RAM, Disk, NetworkInfo
 from modules.weather import WeatherInfo
 
 
@@ -44,7 +44,7 @@ class Bar(Window):
         self.gpu_usage = GPUUsage()
         self.ram = RAM()
         self.disk = Disk()
-        self.network = Network()
+        self.network = NetworkInfo()
 
         self.workspaces = Workspaces(
             name="workspaces",

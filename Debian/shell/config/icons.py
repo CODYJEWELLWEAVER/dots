@@ -34,6 +34,12 @@ sys_temp: str = "&#xeb38;"
 
 wifi: str = "&#xeb52;"
 
+wifi_off: str = "&#xecfa;"
+
+link: str = "&#xeade;"
+
+link_off: str = "&#xf402;"
+
 ethernet: str = "&#xf09f;"
 
 no_network: str = "&#xf414;"

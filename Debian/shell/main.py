@@ -5,10 +5,12 @@ from modules.bar import Bar
 from modules.control_panel import ControlPanel
 
 import asyncio
+from loguru import logger
 from gi.events import GLibEventLoopPolicy
 
 
-if __name__ == "__main__":
+@logger.catch
+def main():
     APP_NAME = "Fabric-Shell"
 
     asyncio.set_event_loop_policy(GLibEventLoopPolicy())
@@ -29,3 +31,7 @@ if __name__ == "__main__":
     app.set_stylesheet_from_file(get_relative_path("main.css"))
 
     app.run()
+
+
+if __name__ == "__main__":
+    main()

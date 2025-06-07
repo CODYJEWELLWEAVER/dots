@@ -57,6 +57,11 @@
 
 #today {
     background-color: var(--background-alt);
+    box-shadow: 0px 0px 5px var(--background-alt);
+}
+
+#today:hover {
+    box-shadow: 0px 0px 5px var(--highlight);
 }
 
 #current-month {

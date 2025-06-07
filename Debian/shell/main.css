@@ -7,6 +7,7 @@
 @import url(./styles/sys_info.css);
 @import url(./styles/weather.css);
 @import url(./styles/calendar.css);
+@import url(./styles/network.css);
 
 * {
     all: unset;

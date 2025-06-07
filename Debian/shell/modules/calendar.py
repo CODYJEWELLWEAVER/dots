@@ -200,7 +200,7 @@ class Calendar(Box):
             )
 
     def get_holiday_icon(self, holiday_name):
-        if "Birthday" and "User" in holiday_name:
+        if "Birthday" and "Your" in holiday_name:
             return icons.holidays["User Birthday"]
         elif holiday_name in icons.holidays:
             return icons.holidays[holiday_name]

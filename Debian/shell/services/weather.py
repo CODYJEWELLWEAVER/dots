@@ -17,10 +17,10 @@ class WeatherService(Service, Singleton):
 
         self._loop = asyncio.get_event_loop()
 
-        self._status = True
+        self._status = False
         self._group = ""
         self._description = ""
-        self._temperature = 0.0
+        self._temperature = 0
 
         self.start()
 
@@ -48,47 +48,48 @@ class WeatherService(Service, Singleton):
     def temperature(self, new_temperature: int):
         self._temperature = new_temperature
 
-    @Property(bool, default_value=True, flags="read-write")
+    @Property(bool, default_value=False, flags="read-write")
     def status(self) -> bool:
         return self._status
 
     @status.setter
     def status(self, new_status: bool):
-        self._staus = new_status
+        self._status = new_status
 
     async def retrieve_data(self):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(WEATHER_API_URL) as response:
-                logger.debug("Fetching weather data...")
+        logger.debug("Fetching weather data...")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(WEATHER_API_URL) as response:
+                    if response.status != 200:
+                        self.status = False
+                        return True
 
-                if response.status != 200:
-                    self.status = False
-                    return True
+                    self.status = True
 
-                self.status = True
+                    response = await response.json()
 
-                response = await response.json()
+                    weather = response["weather"][0]
+                    weather_group = weather["main"]
+                    current_temperature = response["main"]["temp"]
+                    weather_description = weather["description"]
 
-                weather = response["weather"][0]
-                weather_group = weather["main"]
-                current_temperature = response["main"]["temp"]
-                weather_description = weather["description"]
+                    sunrise = response["sys"]["sunrise"]
+                    sunset = response["sys"]["sunset"]
+                    cur_time = time.time()
+                    if weather_group == "Clear":
+                        if sunrise <= cur_time <= sunset:
+                            weather_group = "Clear-Day"
+                        else:
+                            weather_group = "Clear-Night"
 
-                sunrise = response["sys"]["sunrise"]
-                sunset = response["sys"]["sunset"]
-                cur_time = time.time()
-                if sunrise <= cur_time <= sunset and weather_group == "Clear":
-                    weather_group = "Clear-Day"
-                else:
-                    weather_group = "Clear-Night"
+                    self.group = weather_group
+                    self.description = weather_description
+                    self.temperature = current_temperature
+        except:
+            self.status = False
 
-                logger.debug(f"Weather group: {weather_group}")
-
-                self.group = weather_group
-                self.description = weather_description
-                self.temperature = current_temperature
-
-                return True
+        return True
 
     def start(self):
         self._loop.create_task(self.retrieve_data())

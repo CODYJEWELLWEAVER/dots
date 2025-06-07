@@ -3,8 +3,8 @@ from fabric.widgets.box import Box
 from fabric.widgets.circularprogressbar import CircularProgressBar
 from fabric import Fabricator
 
+from services.network import NetworkService
 import config.icons as icons
-import config.network as network
 from widgets.animated_circular_progress_bar import AnimatedCircularProgressBar
 
 import psutil
@@ -93,8 +93,7 @@ class Disk(Box):
         )
 
 
-# TODO: Change this to use Gio.NetworkMonitor?
-class Network(Box):
+class NetworkInfo(Box):
     def __init__(self, **kwargs):
         super().__init__(
             style_classes="sys-info-box",
@@ -105,8 +104,10 @@ class Network(Box):
             **kwargs,
         )
 
-        self.network_status_icon = Label(
-            style_classes="sys-info-icon", markup=icons.wifi
+        self.network_service = NetworkService.get_instance()
+
+        self.network_status_icon_box = Box(
+            children=Label(style_classes="sys-info-icon", markup=icons.wifi)
         )
 
         self.network_status_bar = CircularProgressBar(
@@ -116,39 +117,29 @@ class Network(Box):
             v_align="center",
             size=50,
             line_width=6,
-            child=self.network_status_icon,
+            child=self.network_status_icon_box,
         )
 
         self.children = self.network_status_bar
 
-        self.connection_monitor = Fabricator(
-            interval=500,
-            poll_from=self._get_connection_info,
-            on_changed=self._on_connection_changed,
+        self.network_service.connect(
+            "notify::connection-type", self.on_notify_connection_type
         )
 
-    def _get_connection_info(self, *_) -> str | None:
-        connections = psutil.net_if_stats()
-
-        # see config.network for configuration
-        if network.ethernet in connections:
-            return network.ethernet
-        elif network.wifi in connections:
-            return network.wifi
-        else:
-            return None
-
-    def _on_connection_changed(self, f, connection_name):
-        if connection_name == network.ethernet:
-            icon = icons.ethernet
-        elif connection_name == network.wifi:
+    def on_notify_connection_type(self, *args) -> None:
+        connection_type = self.network_service.connection_type
+        if connection_type == "wireless":
             icon = icons.wifi
+        elif connection_type == "ethernet":
+            icon = icons.ethernet
         else:
             icon = icons.no_network
 
-        self.network_status_icon = Label(style_classes="sys-info-icon", markup=icon)
+        self.network_status_icon_box.children = Label(
+            style_classes="sys-info-icon", markup=icon
+        )
 
-        if not connection_name:
+        if connection_type == "disconnected":
             self.network_status_bar.remove_style_class("connected")
             self.network_status_bar.add_style_class("not-connected")
         else:

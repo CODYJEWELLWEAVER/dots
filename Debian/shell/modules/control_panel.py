@@ -9,7 +9,7 @@ from modules.calendar import Calendar
 from widgets.custom_image import CustomImage
 from config.profile import PROFILE_IMAGE_PATH
 from util.helpers import get_system_node_name, get_user_login_name
-from services.network import NetworkService
+from modules.network import NetworkControl
 
 from gi.repository import GdkPixbuf
 
@@ -28,7 +28,7 @@ class ControlPanel(Window):
             kwargs=kwargs,
         )
 
-        net = NetworkService.get_instance()
+        self.network_control = NetworkControl()
 
         self.profile_image = Box(
             name="profile-image-box",
@@ -66,6 +66,12 @@ class ControlPanel(Window):
                             spacing=40,
                             orientation="h",
                             children=[
+                                Box(
+                                    orientation="v",
+                                    spacing=20,
+                                    h_align="center",
+                                    children=[self.network_control],
+                                ),
                                 Box(
                                     orientation="v",
                                     spacing=20,
