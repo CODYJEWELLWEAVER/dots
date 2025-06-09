@@ -1,7 +1,1 @@
-### Network Connection Names
-
-# WIFI
-wifi: str = "wlp7s0"
-
-# Ethernet
-ethernet: str = "enx823e6a7feefe"
+DEFAULT_WIFI_IFACE = "wlp7s0"

@@ -44,6 +44,18 @@ ethernet: str = "&#xf09f;"
 
 no_network: str = "&#xf414;"
 
+active_connection: str = "&#xf9f5;"
+
+inactive_connection: str = "&#xf9f4;"
+
+wifi_signal_strong: str = "&#xeccb;"
+
+wifi_signal_good: str = "&#xecca;"
+
+wifi_signal_fair: str = "&#xecc9;"
+
+wifi_signal_weak: str = "&#xecc8;"
+
 fahrenheit: str = "&#xeb37;"
 
 arrow_left: str = "&#xea19;"

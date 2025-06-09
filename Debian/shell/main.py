@@ -5,11 +5,9 @@ from modules.bar import Bar
 from modules.control_panel import ControlPanel
 
 import asyncio
-from loguru import logger
 from gi.events import GLibEventLoopPolicy
 
 
-@logger.catch
 def main():
     APP_NAME = "Fabric-Shell"
 
@@ -20,7 +18,7 @@ def main():
     control_panel = ControlPanel()
     bar = Bar(control_panel)
 
-    app = Application(APP_NAME, bar, control_panel, open_inspector=False)
+    app = Application(APP_NAME, bar, control_panel, open_inspector=True)
 
     def apply_stylesheet(*_):
         return app.set_stylesheet_from_file(get_relative_path("main.css"))

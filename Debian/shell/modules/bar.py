@@ -48,7 +48,7 @@ class Bar(Window):
 
         self.workspaces = Workspaces(
             name="workspaces",
-            buttons=[WorkspaceButton(workspace_id) for workspace_id in range(1, 10)],
+            buttons=[WorkspaceButton(workspace_id) for workspace_id in range(1, 11)],
         )
 
         self.date_time = DateTime(

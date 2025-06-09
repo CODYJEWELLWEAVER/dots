@@ -23,6 +23,9 @@ import config.icons as icons
 """ Side Media control and info module. """
 
 
+# TODO: Refactor all dis
+
+
 class MediaControl(Box):
     def __init__(self, manager, **kwargs):
         super().__init__(
@@ -286,7 +289,7 @@ class MediaPanel(Window):
             anchor="left top",
             exclusivity="none",
             visible=False,
-            margin="20px 0px 0px 302px",
+            margin="20px 0px 0px 322px",
             **kwargs,
         )
 

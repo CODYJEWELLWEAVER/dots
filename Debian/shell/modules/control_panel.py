@@ -70,12 +70,6 @@ class ControlPanel(Window):
                                     orientation="v",
                                     spacing=20,
                                     h_align="center",
-                                    children=[self.network_control],
-                                ),
-                                Box(
-                                    orientation="v",
-                                    spacing=20,
-                                    h_align="center",
                                     children=[
                                         self.profile_image,
                                         self.system_name,
@@ -88,6 +82,12 @@ class ControlPanel(Window):
                                     spacing=20,
                                     h_align="center",
                                     children=self.calendar,
+                                ),
+                                Box(
+                                    orientation="v",
+                                    spacing=20,
+                                    h_align="center",
+                                    children=self.network_control,
                                 ),
                             ],
                         )
@@ -110,4 +110,5 @@ class ProfileImage(CustomImage):
         super().__init__(
             name="profile-image",
             pixbuf=pixbuf,
+            **kwargs,
         )

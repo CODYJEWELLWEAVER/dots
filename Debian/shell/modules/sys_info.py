@@ -106,9 +106,7 @@ class NetworkInfo(Box):
 
         self.network_service = NetworkService.get_instance()
 
-        self.network_status_icon_box = Box(
-            children=Label(style_classes="sys-info-icon", markup=icons.wifi)
-        )
+        self.network_status_icon_box = Box()
 
         self.network_status_bar = CircularProgressBar(
             name="network-status-circular-bar",
@@ -125,6 +123,8 @@ class NetworkInfo(Box):
         self.network_service.connect(
             "notify::connection-type", self.on_notify_connection_type
         )
+        # run once to make sure the status label is initialized
+        self.on_notify_connection_type()
 
     def on_notify_connection_type(self, *args) -> None:
         connection_type = self.network_service.connection_type
