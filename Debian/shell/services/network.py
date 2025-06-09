@@ -190,7 +190,7 @@ class NetworkService(Service, Singleton):
         device.request_scan_finish(result)
 
     def on_device_added(self, client, device):
-        if device.get_device_type() == NM.DeviceWifi:
+        if device.get_device_type() == NM.DeviceType.WIFI:
             self._wifi_device = self.get_default_wifi_device()
 
     def on_active_connection(self, client, connection):
