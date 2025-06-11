@@ -18,7 +18,7 @@ def main():
     control_panel = ControlPanel()
     bar = Bar(control_panel)
 
-    app = Application(APP_NAME, bar, control_panel, open_inspector=True)
+    app = Application(APP_NAME, bar, control_panel, open_inspector=False)
 
     def apply_stylesheet(*_):
         return app.set_stylesheet_from_file(get_relative_path("main.css"))

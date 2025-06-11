@@ -40,6 +40,12 @@ link: str = "&#xeade;"
 
 link_off: str = "&#xf402;"
 
+link_add: str = "&#xfd17;"
+
+locked: str = "&#xeae2;"
+
+unlocked: str = "&#xfea8;"
+
 ethernet: str = "&#xf09f;"
 
 no_network: str = "&#xf414;"

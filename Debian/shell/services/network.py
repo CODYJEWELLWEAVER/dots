@@ -20,7 +20,7 @@ class NetworkService(Service, Singleton):
         self._client = NM.Client.new(None)
         self._devices = self._client.get_devices()
         self._wifi_device = self.get_default_wifi_device()
-        
+
         # TODO: Double check this is set correctly if no wifi device is found
         self._wifi_enabled = self._client.wireless_get_enabled()
 
@@ -109,7 +109,7 @@ class NetworkService(Service, Singleton):
     @Property(List[NM.AccessPoint], flags="readable")
     def access_points(self) -> List[NM.AccessPoint]:
         return self._wifi_device.get_access_points()
-    
+
     def get_default_wifi_device(self) -> NM.DeviceWifi | None:
         wifi_devices = self.get_wifi_devices()
         if len(wifi_devices) > 0:
@@ -138,17 +138,72 @@ class NetworkService(Service, Singleton):
                 },
             )
 
+    def connect_to_access_point(self, ap_info, password: str | None):
+        # This should not be called for access points that are already connected
+        if self.is_access_point_connected(ap_info.ssid):
+            return
+
+        uuid=NM.utils_uuid_generate()
+        self.add_wifi_connection(
+            full_name=ap_info.full_name,
+            ssid=ap_info.ssid,
+            path=ap_info.path,
+            is_secured=ap_info.is_secured,
+            uuid=uuid
+        )
+
+        # add password to connection secrets
+        if ap_info.is_secured:
+            pass
+
+
+    def add_wifi_connection(self, full_name: str, ssid: GLib.Bytes, uuid: str, path: str, is_secured: bool):
+        print(self.wifi_connection.get_connection().dump())
+        # create new connection object and fill the settings
+        connection = NM.RemoteConnection()
+        connection.set_path(path)
+
+        # general connection settings
+        connection_settings = NM.SettingConnection()
+        connection_settings.props.id = full_name
+        connection_settings.props.type = "802-11-wireless"
+        connection_settings.uuid = uuid
+        connection.add_setting(connection_settings)
+
+        # wifi setting
+        wireless_settings = NM.SettingWireless()
+        wireless_settings.props.ssid = ssid
+        connection.add_setting(wireless_settings)
+
+        # wifi security settings
+        wireless_security_settings = NM.SettingWirelessSecurity()
+        wireless_security_settings.props.auth_alg = "open"
+        wireless_security_settings.props.key_mgmt = "wpa-psk" if is_secured else "none"
+        connection.add_setting(wireless_security_settings)
+
+        self._client.add_connection_async(
+            connection,
+            True, # save to disk
+            None, # cancellable
+            self.add_connection_finish_callback,
+            None, # user data
+        )
+
+    @logger.catch
+    def add_connection_finish_callback(self, client, result, data):
+        self._client.add_connection_finish(result)
+
     def toggle_wireless(self):
         enabled = self.wifi_enabled
         self._client.dbus_set_property(
             NM.DBUS_PATH,
             NM.DBUS_INTERFACE,
-            "WirelessEnabled",
-            GLib.Variant("b", not enabled),
-            -1,  # use default timeout
-            None,
-            None,
-            None,
+            "WirelessEnabled", # property name
+            GLib.Variant("b", not enabled), # value
+            -1,  # timeout (in msec), use default
+            None, # cancellable
+            None, # callback, is not a reliable way to adjust ui elements
+            None, # user data for callback
         )
         self._wifi_enabled = not enabled
         self.notify("wifi-enabled")
@@ -156,23 +211,20 @@ class NetworkService(Service, Singleton):
     def toggle_connection_active(self, connection: NM.RemoteConnection):
         if not self.is_connection_active(connection):
             self._client.activate_connection_async(
-                    connection,
-                    None,  # use default device
-                    connection.get_path(),
-                    None,
-                    self.activate_finish_callback,
-                    None,
-                )
+                connection,
+                None,  # use default device
+                connection.get_path(),
+                None,
+                self.activate_finish_callback,
+                None,
+            )
         else:
             active_connection = self.get_active_connection_from_remote(connection)
             if active_connection is not None:
                 self._client.deactivate_connection_async(
-                    active_connection,
-                    None,
-                    self.deactivate_finish_callback,
-                    None
+                    active_connection, None, self.deactivate_finish_callback, None
                 )
-    
+
     @logger.catch
     def activate_finish_callback(self, device, result, data):
         self._client.activate_connection_finish(result)
@@ -204,10 +256,22 @@ class NetworkService(Service, Singleton):
     def is_connection_active(self, connection) -> bool:
         active_con_uuids = [con.get_uuid() for con in self.active_connections]
         return connection.get_uuid() in active_con_uuids
-    
+
     def get_active_connection_from_remote(self, remote) -> NM.ActiveConnection | None:
         for con in self.active_connections:
             if con.get_uuid() == remote.get_uuid():
                 return con
-            
+
         return None
+    
+    def is_access_point_connected(self, ssid):
+        for connection in self.connections:
+            general_settings = connection.get_setting_connection()
+            if general_settings.props.type != "802-11-wireless":
+                continue
+
+            wireless_settings = connection.get_setting_wireless()
+            if wireless_settings.props.ssid.get_data() == ssid.get_data():
+                return True
+            
+        return False

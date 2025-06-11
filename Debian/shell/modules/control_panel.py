@@ -3,13 +3,14 @@ from fabric.widgets.box import Box
 from fabric.widgets.label import Label
 from fabric.widgets.shapes.corner import Corner
 from fabric.widgets.datetime import DateTime
+from fabric.widgets.stack import Stack
 
 from modules.weather import WeatherInfo
 from modules.calendar import Calendar
 from widgets.custom_image import CustomImage
 from config.profile import PROFILE_IMAGE_PATH
 from util.helpers import get_system_node_name, get_user_login_name
-from modules.network import NetworkControl
+from modules.network import NetworkOverview, ConnectionSettings
 
 from gi.repository import GdkPixbuf
 
@@ -28,7 +29,8 @@ class ControlPanel(Window):
             kwargs=kwargs,
         )
 
-        self.network_control = NetworkControl()
+        self.network_overview = NetworkOverview(self.show_connections_view)
+        self.connection_settings = ConnectionSettings(self.show_main_view)
 
         self.profile_image = Box(
             name="profile-image-box",
@@ -50,55 +52,90 @@ class ControlPanel(Window):
 
         self.calendar = Calendar()
 
-        self.connect("focus-out-event", lambda *_: self.hide())
-
-        self.children = Box(
+        self.main_view = Box(
+            orientation="h",
             children=[
+                self.left_corner(),
                 Box(
-                    style_classes="corner-box",
-                    children=Corner("top-right", name="left-corner", size=(225, 75)),
-                ),
-                Box(
-                    name="control-panel-box",
-                    orientation="v",
+                    style_classes="view-box",
+                    orientation="h",
+                    spacing=40,
                     children=[
                         Box(
-                            spacing=40,
-                            orientation="h",
+                            orientation="v",
+                            spacing=20,
+                            h_align="center",
                             children=[
-                                Box(
-                                    orientation="v",
-                                    spacing=20,
-                                    h_align="center",
-                                    children=[
-                                        self.profile_image,
-                                        self.system_name,
-                                        self.datetime,
-                                        self.weather_info,
-                                    ],
-                                ),
-                                Box(
-                                    orientation="v",
-                                    spacing=20,
-                                    h_align="center",
-                                    children=self.calendar,
-                                ),
-                                Box(
-                                    orientation="v",
-                                    spacing=20,
-                                    h_align="center",
-                                    children=self.network_control,
-                                ),
+                                self.profile_image,
+                                self.system_name,
+                                self.datetime,
+                                self.weather_info,
                             ],
-                        )
+                        ),
+                        Box(
+                            orientation="v",
+                            spacing=20,
+                            h_align="center",
+                            children=self.calendar,
+                        ),
+                        Box(
+                            orientation="v",
+                            spacing=20,
+                            h_align="center",
+                            children=self.network_overview,
+                        ),
                     ],
                 ),
-                Box(
-                    style_classes="corner-box",
-                    children=Corner("top-left", name="right-corner", size=(225, 75)),
-                ),
-            ]
+                self.right_corner(),
+            ],
         )
+
+        self.connections_view = Box(
+            orientation="h",
+            children=[
+                self.left_corner(),
+                self.connection_settings,
+                self.right_corner(),
+            ],
+        )
+
+        self.content_stack = Stack(
+            transition_type="over-down-up",
+            transition_duration=300,
+            interpolate_size=True,
+            h_expand=True,
+            v_expand=True,
+            children=[
+                self.main_view,
+                self.connections_view,
+            ],
+        )
+        # allow stack to grow and shrink with each child
+        self.content_stack.set_property("hhomogeneous", False)
+        self.content_stack.set_property("vhomogeneous", False)
+        self.show_main_view()
+
+        self.children = self.content_stack
+
+        self.connect("focus-out-event", lambda *_: self.hide())
+
+    def left_corner(self) -> Box:
+        return Box(
+            style_classes="corner-box",
+            children=Corner("top-right", name="left-corner", size=(225, 75)),
+        )
+    
+    def right_corner(self) -> Box:
+        return Box(
+            style_classes="corner-box",
+            children=Corner("top-left", name="right-corner", size=(225, 75)),
+        )
+
+    def show_main_view(self, *args):
+        self.content_stack.set_visible_child(self.main_view)
+
+    def show_connections_view(self, *args):
+        self.content_stack.set_visible_child(self.connections_view)
 
 
 class ProfileImage(CustomImage):
