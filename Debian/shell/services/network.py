@@ -1,9 +1,10 @@
 from fabric.core.service import Service, Property
-from fabric.utils.helpers import bulk_connect, exec_shell_command_async
+from fabric.utils.helpers import bulk_connect
 
 from config.network import DEFAULT_WIFI_IFACE
 from util.singleton import Singleton
 from loguru import logger
+import dbus
 
 import gi
 from gi.repository import NM, GLib
@@ -11,6 +12,8 @@ from gi.repository import NM, GLib
 from typing import List, Literal
 
 gi.require_version("NM", "1.0")
+
+DBUS = dbus.SystemBus()
 
 
 class NetworkService(Service, Singleton):
@@ -22,7 +25,11 @@ class NetworkService(Service, Singleton):
         self._wifi_device = self.get_default_wifi_device()
 
         # TODO: Double check this is set correctly if no wifi device is found
-        self._wifi_enabled = self._client.wireless_get_enabled()
+        self._wifi_enabled = (
+            self._client.wireless_get_enabled()
+            if self.get_wifi_devices() != []
+            else False
+        )
 
         self.connect_wifi_device_to_notify_access_points(self._wifi_device)
 
@@ -40,41 +47,26 @@ class NetworkService(Service, Singleton):
         # scan for access-points initially
         self.request_scan()
 
-        """ self._client.add_and_activate_connection2(
-            NM.RemoteConnection(),
-            self.get_wifi_devices()[0],
-            self.access_points[0].get_path(),
-            GLib.Variant("a{sv}", None),
-            None,
-            None,
-            None
-        ) """
-
     @Property(Literal["wireless", "ethernet", "disconnected"], flags="readable")
-    def connection_type(
+    def primary_connection_type(
         self,
     ) -> Literal["wireless", "ethernet", "disconnected"]:
-        """primary_connection = self._client.get_primary_connection()
+        primary_connection = self._client.get_primary_connection()
 
         if primary_connection is not None:
             connection_type = primary_connection.get_connection_type()
             if "wireless" in connection_type:
                 return "wireless"
             elif "ethernet" in connection_type:
-                return "ethernet" """
-
-        # if the primary connection is not defined, we could still have a connection
-        # TODO: Check why the primary connection will not update? I probably have a
-        # misunderstanding.
-
-        active_connections = self.active_connections
-        if len(active_connections) > 0:
-            # this is somewhat hacky, need to find a nicer solution
-            connection_type = active_connections[0].get_connection_type()
-            if "wireless" in connection_type:
-                return "wireless"
-            elif "ethernet" in connection_type:
                 return "ethernet"
+        else:
+            active_connections = self.active_connections
+            if len(active_connections) > 0:
+                connection_type = active_connections[0].get_connection_type()
+                if "wireless" in connection_type:
+                    return "wireless"
+                elif "ethernet" in connection_type:
+                    return "ethernet"
 
         return "disconnected"
 
@@ -125,11 +117,14 @@ class NetworkService(Service, Singleton):
             dev for dev in self._devices if dev.get_device_type() == NM.DeviceType.WIFI
         ]
 
-    def connect_wifi_device_to_notify_access_points(self, device):
+    def connect_wifi_device_to_notify_access_points(self, device) -> None:
         # link wifi devices to notify when they
         # add or remove access points
-        if device in self.get_wifi_devices():
-            notify_access_points = lambda *_: self.notify("access-points")
+        if device is not None:
+
+            def notify_access_points(*args):
+                self.notify("access-points")
+
             bulk_connect(
                 device,
                 {
@@ -138,27 +133,26 @@ class NetworkService(Service, Singleton):
                 },
             )
 
-    def connect_to_access_point(self, ap_info, password: str | None):
-        # This should not be called for access points that are already connected
+    def connect_to_access_point(self, ap_info, password: str | None) -> None:
         if self.is_access_point_connected(ap_info.ssid):
             return
 
-        uuid=NM.utils_uuid_generate()
         self.add_wifi_connection(
             full_name=ap_info.full_name,
             ssid=ap_info.ssid,
             path=ap_info.path,
             is_secured=ap_info.is_secured,
-            uuid=uuid
+            password=password,
         )
 
-        # add password to connection secrets
-        if ap_info.is_secured:
-            pass
-
-
-    def add_wifi_connection(self, full_name: str, ssid: GLib.Bytes, uuid: str, path: str, is_secured: bool):
-        print(self.wifi_connection.get_connection().dump())
+    def add_wifi_connection(
+        self,
+        full_name: str,
+        ssid: GLib.Bytes,
+        path: str,
+        is_secured: bool,
+        password: str | None,
+    ) -> None:
         # create new connection object and fill the settings
         connection = NM.RemoteConnection()
         connection.set_path(path)
@@ -167,7 +161,7 @@ class NetworkService(Service, Singleton):
         connection_settings = NM.SettingConnection()
         connection_settings.props.id = full_name
         connection_settings.props.type = "802-11-wireless"
-        connection_settings.uuid = uuid
+        connection_settings.uuid = NM.utils_uuid_generate()
         connection.add_setting(connection_settings)
 
         # wifi setting
@@ -176,37 +170,53 @@ class NetworkService(Service, Singleton):
         connection.add_setting(wireless_settings)
 
         # wifi security settings
-        wireless_security_settings = NM.SettingWirelessSecurity()
-        wireless_security_settings.props.auth_alg = "open"
-        wireless_security_settings.props.key_mgmt = "wpa-psk" if is_secured else "none"
-        connection.add_setting(wireless_security_settings)
+        if is_secured:
+            wireless_security_settings = NM.SettingWirelessSecurity()
+            wireless_security_settings.props.auth_alg = "open"
+            wireless_security_settings.props.key_mgmt = "wpa-psk"
+            wireless_security_settings.props.psk = password
+            connection.add_setting(wireless_security_settings)
 
-        self._client.add_connection_async(
+        self._client.add_and_activate_connection_async(
             connection,
-            True, # save to disk
-            None, # cancellable
-            self.add_connection_finish_callback,
-            None, # user data
+            self.get_default_wifi_device(),  # device
+            path,  # specific object
+            None,  # cancellable
+            self.add_connection_and_activate_finish_callback,
+            None,  # user data
         )
 
     @logger.catch
-    def add_connection_finish_callback(self, client, result, data):
-        self._client.add_connection_finish(result)
+    def add_connection_and_activate_finish_callback(self, client, result, data) -> None:
+        self._client.add_and_activate_connection_finish(result)
 
-    def toggle_wireless(self):
-        enabled = self.wifi_enabled
-        self._client.dbus_set_property(
-            NM.DBUS_PATH,
-            NM.DBUS_INTERFACE,
-            "WirelessEnabled", # property name
-            GLib.Variant("b", not enabled), # value
-            -1,  # timeout (in msec), use default
-            None, # cancellable
-            None, # callback, is not a reliable way to adjust ui elements
-            None, # user data for callback
+    def delete_connection(self, connection: NM.RemoteConnection):
+        connection.delete_async(
+            None,
+            self.delete_connection_finish_callback,
+            None,
         )
-        self._wifi_enabled = not enabled
-        self.notify("wifi-enabled")
+
+    @logger.catch
+    def delete_connection_finish_callback(self, connection, result, data):
+        connection.delete_finish(result)
+
+    # TODO: Test this for when wifi is not available
+    def toggle_wireless(self):
+        if self.get_wifi_devices() != []:
+            enabled = self.wifi_enabled
+            self._client.dbus_set_property(
+                NM.DBUS_PATH,
+                NM.DBUS_INTERFACE,
+                "WirelessEnabled",  # property name
+                GLib.Variant("b", not enabled),  # value
+                -1,  # timeout (in msec), use default
+                None,
+                None,  # callback, is not a reliable way to adjust ui elements
+                None,  # user data for callback
+            )
+            self._wifi_enabled = not enabled
+            self.notify("wifi-enabled")
 
     def toggle_connection_active(self, connection: NM.RemoteConnection):
         if not self.is_connection_active(connection):
@@ -263,7 +273,7 @@ class NetworkService(Service, Singleton):
                 return con
 
         return None
-    
+
     def is_access_point_connected(self, ssid):
         for connection in self.connections:
             general_settings = connection.get_setting_connection()
@@ -273,5 +283,5 @@ class NetworkService(Service, Singleton):
             wireless_settings = connection.get_setting_wireless()
             if wireless_settings.props.ssid.get_data() == ssid.get_data():
                 return True
-            
+
         return False

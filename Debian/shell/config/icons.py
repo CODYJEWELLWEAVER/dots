@@ -68,6 +68,10 @@ arrow_left: str = "&#xea19;"
 
 arrow_right: str = "&#xea1f;"
 
+delete: str = "&#xf2b8;"
+
+refresh: str = "&#xeb13;"
+
 weather = {
     "Clear-Night": "&#xece7;",
     "Clear-Day": "&#xeb30;",

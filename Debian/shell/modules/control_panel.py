@@ -101,7 +101,7 @@ class ControlPanel(Window):
 
         self.content_stack = Stack(
             transition_type="over-down-up",
-            transition_duration=300,
+            transition_duration=250,
             interpolate_size=True,
             h_expand=True,
             v_expand=True,
@@ -124,7 +124,7 @@ class ControlPanel(Window):
             style_classes="corner-box",
             children=Corner("top-right", name="left-corner", size=(225, 75)),
         )
-    
+
     def right_corner(self) -> Box:
         return Box(
             style_classes="corner-box",

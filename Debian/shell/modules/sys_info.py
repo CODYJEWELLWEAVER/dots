@@ -127,7 +127,7 @@ class NetworkInfo(Box):
         self.on_notify_connection_type()
 
     def on_notify_connection_type(self, *args) -> None:
-        connection_type = self.network_service.connection_type
+        connection_type = self.network_service.primary_connection_type
         if connection_type == "wireless":
             icon = icons.wifi
         elif connection_type == "ethernet":

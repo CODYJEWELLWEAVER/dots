@@ -86,8 +86,9 @@ class WeatherService(Service, Singleton):
                     self.group = weather_group
                     self.description = weather_description
                     self.temperature = current_temperature
-        except:
+        except Exception as exception:
             self.status = False
+            logger.warning(exception)
 
         return True
 

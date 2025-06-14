@@ -5,7 +5,6 @@ from fabric.widgets.scrolledwindow import ScrolledWindow
 from fabric.widgets.entry import Entry
 
 from fabric.utils.helpers import truncate, bulk_connect
-from loguru import logger
 
 from services.network import NetworkService
 import config.icons as icons
@@ -15,11 +14,6 @@ import gi
 from gi.repository import NM
 
 gi.require_version("NM", "1.0")
-
-
-WIFI_ENABLED_LABEL = "On"
-WIFI_DISABLED_LABEL = "Off"
-NM80211ApSecurityFlags = getattr(NM, "80211ApSecurityFlags")
 
 
 def get_connection_id(connection: NM.ActiveConnection) -> str:
@@ -49,12 +43,15 @@ def get_strength_icon(strength: int) -> str:
 class NetworkOverview(Box):
     def __init__(self, do_show_connection_settings, **kwargs):
         super().__init__(
-            name="network-control",
+            name="network-overview",
             orientation="v",
             h_align="center",
             h_expand=True,
             **kwargs,
         )
+
+        self.WIFI_ENABLED_LABEL = "On"
+        self.WIFI_DISABLED_LABEL = "Off"
 
         self.do_show_connection_settings = do_show_connection_settings
 
@@ -67,9 +64,9 @@ class NetworkOverview(Box):
         )
         self.toggle_wifi_label = Label(
             style_classes="network-control-label",
-            label=WIFI_ENABLED_LABEL
+            label=self.WIFI_ENABLED_LABEL
             if self.network_service.wifi_enabled
-            else WIFI_DISABLED_LABEL,
+            else self.WIFI_DISABLED_LABEL,
         )
         self.toggle_wifi_child_box = Box(
             spacing=10,
@@ -136,7 +133,8 @@ class NetworkOverview(Box):
             markup=icons.wifi if wifi_enabled else icons.wifi_off,
         )
         self.toggle_wifi_label.set_property(
-            "label", WIFI_ENABLED_LABEL if wifi_enabled else WIFI_DISABLED_LABEL
+            "label",
+            self.WIFI_ENABLED_LABEL if wifi_enabled else self.WIFI_DISABLED_LABEL,
         )
         self.toggle_wifi_child_box.children = [
             self.toggle_wifi_icon,
@@ -167,13 +165,12 @@ class ConnectionSettings(Box):
     def __init__(self, on_close, **kwargs):
         super().__init__(
             name="connection-settings",
+            style_classes="view-box",
             visible=True,
             orientation="v",
             h_align="center",
             **kwargs,
         )
-
-        self.on_close = on_close
 
         self.network_service = NetworkService.get_instance()
 
@@ -198,8 +195,14 @@ class ConnectionSettings(Box):
             name="access-points-view", child=self.access_points_box
         )
 
-        self.content_box = Box(
-            name="connection-settings-content",
+        self.request_scan_button = Button(
+            child=Label(style_classes="connection-settings-icon", markup=icons.refresh),
+            on_clicked=lambda *_: self.network_service.request_scan(),
+        )
+        add_hover_cursor(self.request_scan_button)
+
+        self.overview_box = Box(
+            name="connection-settings-overview",
             orientation="h",
             spacing=40,
             v_align="center",
@@ -213,7 +216,15 @@ class ConnectionSettings(Box):
                     orientation="v",
                     spacing=10,
                     children=[
-                        Label("Available Wifi Networks"),
+                        Box(
+                            spacing=20,
+                            orientation="h",
+                            h_align="center",
+                            children=[
+                                Label("Available Wifi Networks"),
+                                self.request_scan_button,
+                            ],
+                        ),
                         self.access_points_view,
                     ],
                 ),
@@ -221,45 +232,49 @@ class ConnectionSettings(Box):
                     children=Button(
                         name="close-connection-settings-button",
                         child=Label(
-                            name="close-connection-settings-icon",
+                            style_classes="connection-settings-icon",
                             markup=icons.arrow_right,
                         ),
-                        on_clicked=self.on_close,
+                        on_clicked=on_close,
                     )
                 ),
             ],
         )
 
         self.password_entry_label = Label(
-            name="password-entry-label",
-            label="Enter password:"
+            name="password-entry-label", label="Enter password:"
         )
         self.password_entry = Entry(
             name="password-entry",
             password=True,
         )
-        self.confirm_password_button = Button(
-            name="confirm-password-button",
+        self.connect_button = Button(
+            style_classes="password-entry-button",
             label="Connect",
         )
+        self.cancel_button = Button(
+            style_classes="password-entry-button",
+            label="Cancel",
+            on_clicked=lambda *_: self.password_entry_box.set_visible(False),
+        )
+        add_hover_cursor(self.cancel_button)
+
         self.password_entry_box = Box(
             name="password-entry-box",
-            spacing=10,
+            spacing=20,
             orientation="h",
             h_expand=True,
             h_align="center",
             visible=False,
             children=[
+                self.cancel_button,
                 self.password_entry_label,
                 self.password_entry,
-                self.confirm_password_button,
-            ]
+                self.connect_button,
+            ],
         )
 
-        self.children = [
-            self.content_box,
-            self.password_entry_box
-        ]
+        self.children = [self.password_entry_box, self.overview_box]
 
         bulk_connect(
             self.network_service,
@@ -271,76 +286,49 @@ class ConnectionSettings(Box):
         )
 
     def update_connection_elements(self, *args):
-        self.connections_box.children = []
-        for con in self.get_connection_elements():
-            self.connections_box.add(con)
+        self.connections_box.children = self.get_connection_elements()
 
     def update_access_point_elements(self, *args):
         self.access_points_box.children = self.get_access_point_elements()
 
     def show_password_entry_box(self, ap_info):
-        if not self.network_service.is_access_point_connected(ap_info.ssid):
+        def get_password_and_connect(button):
+            entered_password = self.password_entry.get_text()
+            if entered_password != "":
+                self.network_service.connect_to_access_point(ap_info, entered_password)
+                self.password_entry_box.set_visible(False)
+                self.password_entry.set_property("text", "")
 
-            def get_password_and_connect(button):
-                entered_password = self.password_entry.get_text()
-                if entered_password is not None:
-                    self.connect_to_access_point(ap_info, entered_password)
-                    self.password_entry_box.set_visible(False)
+        # TODO: surely there is a better way to do this?
+        # remakes connect button to link it to correct action
+        self.password_entry_box.remove(self.connect_button)
+        self.connect_button = Button(
+            style_classes="password-entry-button",
+            label="Connect",
+            on_clicked=get_password_and_connect,
+        )
+        add_hover_cursor(self.connect_button)
+        self.password_entry_box.add(self.connect_button)
 
-            self.password_entry_box.remove(self.confirm_password_button)
-            self.confirm_password_button = Button(
-                name="confirm-password-button",
-                label="Connect",
-                on_clicked=get_password_and_connect
-            )
-            self.password_entry_box.add(self.confirm_password_button)
-            self.password_entry_box.set_visible(True)
-
-
-    def connect_to_access_point(self, ap_info, password: str | None):
-        if not ap_info.is_secured or ap_info.is_psk_key_managed:
-            self.network_service.connect_to_access_point(ap_info, password)
-        else:
-            logger.error("Cannot connect to secure networks that don't accept psk key management.")
-
-    def toggle_connection_active(self, connection):
-        self.network_service.toggle_connection_active(connection)
+        self.password_entry_box.set_visible(True)
 
     def get_connection_elements(self):
         elements = []
 
-        for con in self.network_service.connections:
-            toggle_active_button = Button(
-                style_classes="toggle-connection-active-button",
-                child=Label(
-                    style_classes="connection-element-icon",
-                    markup=icons.active_connection
-                    if self.network_service.is_connection_active(con)
-                    else icons.inactive_connection,
+        for connection in self.network_service.connections:
+            connection_element = ConnectionElement(
+                is_active=self.network_service.is_connection_active(connection),
+                connection_icon=get_connection_icon(connection),
+                connection_id=get_connection_id(connection),
+                toggle_active_callback=lambda *_, con=connection: (
+                    self.network_service.toggle_connection_active(con)
                 ),
-                on_clicked=lambda *_, con=con: self.toggle_connection_active(con),
+                delete_callback=lambda *_, con=connection: (
+                    self.network_service.delete_connection(con)
+                ),
             )
-            add_hover_cursor(toggle_active_button)
 
-            elements.append(
-                Box(
-                    orientation="h",
-                    spacing=10,
-                    style_classes="connection-element",
-                    h_expand=True,
-                    children=[
-                        toggle_active_button,
-                        Label(
-                            style_classes="connection-element-icon",
-                            markup=get_connection_icon(con),
-                        ),
-                        Label(
-                            style_classes="connection-element-label",
-                            label=get_connection_id(con),
-                        ),
-                    ],
-                )
-            )
+            elements.append(connection_element)
 
         return elements
 
@@ -356,54 +344,69 @@ class ConnectionSettings(Box):
             if access_point.get_ssid() is not None:
                 ap_info = AccessPointInfo(access_point)
 
-                if ap_info.is_secured:
-                    connect_button = Button(
-                        child=Label(
-                            style_classes="access-point-element-icon",
-                            markup=icons.link_add,
-                        ),
-                        on_clicked=lambda b, ap_info=ap_info: (
-                            self.show_password_entry_box(ap_info)
-                        ),
-                    )
-                else:
-                    connect_button = Button(
-                        child=Label(
-                            style_classes="access-point-element-icon",
-                            markup=icons.link_add,
-                        ),
-                        on_clicked=lambda b, ap_info=ap_info: (
-                            self.connect_to_access_point(ap_info, None)
-                        ),
-                    )
-                add_hover_cursor(connect_button)
+                def on_connect(*args, ap_info=ap_info):
+                    if ap_info.is_secured:
+                        self.show_password_entry_box(ap_info)
+                    else:
+                        self.network_service.connect_to_access_point(ap_info, None)
 
-                elements.append(
-                    Box(
-                        style_classes="access-point-element",
-                        orientation="h",
-                        spacing=10,
-                        children=[
-                            Label(
-                                style_classes="access-point-element-icon",
-                                markup=icons.locked
-                                if ap_info.is_secured
-                                else icons.unlocked,
-                            ),
-                            connect_button,
-                            Label(
-                                style_classes="access-point-element-label",
-                                label=ap_info.display_name,
-                            ),
-                            Label(
-                                style_classes="access-point-element-icon",
-                                markup=ap_info.strength_icon,
-                            ),
-                        ],
-                    )
+                access_point_element = AccessPointElement(
+                    ap_info=ap_info, connect_callback=on_connect
                 )
 
+                elements.append(access_point_element)
+
         return elements
+
+
+class ConnectionElement(Box):
+    def __init__(
+        self,
+        is_active: bool,
+        connection_icon: str,
+        connection_id: str,
+        toggle_active_callback,
+        delete_callback,
+        **kwargs,
+    ):
+        toggle_active_button = Button(
+            style_classes="toggle-connection-active-button",
+            child=Label(
+                style_classes="connection-element-icon",
+                markup=icons.active_connection
+                if is_active
+                else icons.inactive_connection,
+            ),
+            on_clicked=toggle_active_callback,
+        )
+        add_hover_cursor(toggle_active_button)
+
+        delete_button = Button(
+            style_classes="delete-connection-button",
+            child=Label(style_classes="connection-element-icon", markup=icons.delete),
+            on_clicked=delete_callback,
+        )
+        add_hover_cursor(delete_button)
+
+        super().__init__(
+            orientation="h",
+            spacing=10,
+            style_classes="connection-element",
+            h_expand=True,
+            children=[
+                delete_button,
+                Label(
+                    style_classes="connection-element-icon",
+                    markup=connection_icon,
+                ),
+                toggle_active_button,
+                Label(
+                    style_classes="connection-element-label",
+                    label=connection_id,
+                ),
+            ],
+            **kwargs,
+        )
 
 
 class AccessPointInfo:
@@ -412,17 +415,49 @@ class AccessPointInfo:
 
         self.ssid = access_point.get_ssid()
         self.path = access_point.get_path()
-        self.display_name = truncate(
-            full_name, 18
-        )
+        self.display_name = truncate(full_name, 18)
         self.full_name = full_name
         self.strength_icon = get_strength_icon(access_point.get_strength())
         self.is_secured = (
-            access_point.get_rsn_flags() != 0 # Check if WPA v2 secured
-            or
-            access_point.get_wpa_flags() != 0 # Check if WPA v1 secured
+            access_point.get_rsn_flags() != 0  # Check if WPA v2 secured
+            or access_point.get_wpa_flags() != 0  # Check if WPA v1 secured
         )
-        self.is_psk_key_managed = ( 
-            # only support psk key mgmt for now until I can test other key mgmt methods
-            access_point.get_rsn_flags() & NM80211ApSecurityFlags.KEY_MGMT_PSK != 0
+
+
+class AccessPointElement(Box):
+    def __init__(
+        self,
+        ap_info: AccessPointInfo,
+        connect_callback,
+        **kwargs,
+    ):
+        connect_button = Button(
+            child=Label(
+                style_classes="access-point-element-icon",
+                markup=icons.link_add,
+            ),
+            on_clicked=connect_callback,
+        )
+        add_hover_cursor(connect_button)
+
+        super().__init__(
+            style_classes="access-point-element",
+            orientation="h",
+            spacing=10,
+            children=[
+                Label(
+                    style_classes="access-point-element-icon",
+                    markup=icons.locked if ap_info.is_secured else icons.unlocked,
+                ),
+                connect_button,
+                Label(
+                    style_classes="access-point-element-label",
+                    label=ap_info.display_name,
+                ),
+                Label(
+                    style_classes="access-point-element-icon",
+                    markup=ap_info.strength_icon,
+                ),
+            ],
+            **kwargs,
         )
