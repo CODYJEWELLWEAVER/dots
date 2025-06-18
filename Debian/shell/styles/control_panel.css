@@ -8,12 +8,12 @@
     margin-bottom: 20px;
 }
 
-#left-corner {
+.left-corner {
     background-color: var(--background);
     border-radius: 0px;
 }
 
-#right-corner {
+.right-corner {
     background-color: var(--background);
     border-radius: 0px;
 }

@@ -168,31 +168,35 @@ class ConnectionSettings(Box):
             style_classes="view-box",
             visible=True,
             orientation="v",
+            v_expand=True,
             h_align="center",
             **kwargs,
         )
 
         self.network_service = NetworkService.get_instance()
 
-        self.connections_box = Box(
-            name="connections-box",
+        self.connections_list = Box(
             orientation="v",
             spacing=10,
+            v_expand=True,
             children=self.get_connection_elements(),
         )
         self.connections_view = ScrolledWindow(
-            name="connections-view",
-            child=self.connections_box,
+            style_classes="connection-settings-scrolled-window",
+            v_expand=True,
+            child=self.connections_list,
         )
 
-        self.access_points_box = Box(
-            name="access-points-box",
+        self.access_points_list = Box(
             orientation="v",
             spacing=10,
+            v_expand=True,
             children=self.get_access_point_elements(),
         )
         self.access_points_view = ScrolledWindow(
-            name="access-points-view", child=self.access_points_box
+            style_classes="connection-settings-scrolled-window",
+            v_expand=True,
+            child=self.access_points_list,
         )
 
         self.request_scan_button = Button(
@@ -205,6 +209,7 @@ class ConnectionSettings(Box):
             name="connection-settings-overview",
             orientation="h",
             spacing=40,
+            v_expand=True,
             v_align="center",
             children=[
                 Box(
@@ -221,8 +226,8 @@ class ConnectionSettings(Box):
                             orientation="h",
                             h_align="center",
                             children=[
-                                Label("Available Wifi Networks"),
                                 self.request_scan_button,
+                                Label("Available Wifi Networks"),
                             ],
                         ),
                         self.access_points_view,
@@ -286,10 +291,10 @@ class ConnectionSettings(Box):
         )
 
     def update_connection_elements(self, *args):
-        self.connections_box.children = self.get_connection_elements()
+        self.connections_list.children = self.get_connection_elements()
 
     def update_access_point_elements(self, *args):
-        self.access_points_box.children = self.get_access_point_elements()
+        self.access_points_list.children = self.get_access_point_elements()
 
     def show_password_entry_box(self, ap_info):
         def get_password_and_connect(button):
@@ -335,9 +340,7 @@ class ConnectionSettings(Box):
     def get_access_point_elements(self):
         elements = []
 
-        access_points = [
-            ap for ap in self.network_service.access_points if ap.get_ssid() is not None
-        ]
+        access_points = self.network_service.access_points
         access_points.sort(key=lambda ap: ap.get_strength(), reverse=True)
 
         for access_point in access_points:
@@ -383,7 +386,7 @@ class ConnectionElement(Box):
 
         delete_button = Button(
             style_classes="delete-connection-button",
-            child=Label(style_classes="connection-element-icon", markup=icons.delete),
+            child=Label(style_classes="connection-settings-icon", markup=icons.delete),
             on_clicked=delete_callback,
         )
         add_hover_cursor(delete_button)
@@ -391,12 +394,11 @@ class ConnectionElement(Box):
         super().__init__(
             orientation="h",
             spacing=10,
-            style_classes="connection-element",
-            h_expand=True,
+            style_classes="connection-settings-element",
             children=[
                 delete_button,
                 Label(
-                    style_classes="connection-element-icon",
+                    style_classes="connection-settings-icon",
                     markup=connection_icon,
                 ),
                 toggle_active_button,
@@ -433,7 +435,7 @@ class AccessPointElement(Box):
     ):
         connect_button = Button(
             child=Label(
-                style_classes="access-point-element-icon",
+                style_classes="connection-settings-icon",
                 markup=icons.link_add,
             ),
             on_clicked=connect_callback,
@@ -441,12 +443,12 @@ class AccessPointElement(Box):
         add_hover_cursor(connect_button)
 
         super().__init__(
-            style_classes="access-point-element",
+            style_classes="connection-settings-element",
             orientation="h",
             spacing=10,
             children=[
                 Label(
-                    style_classes="access-point-element-icon",
+                    style_classes="connection-settings-icon",
                     markup=icons.locked if ap_info.is_secured else icons.unlocked,
                 ),
                 connect_button,
@@ -455,7 +457,7 @@ class AccessPointElement(Box):
                     label=ap_info.display_name,
                 ),
                 Label(
-                    style_classes="access-point-element-icon",
+                    style_classes="connection-settings-icon",
                     markup=ap_info.strength_icon,
                 ),
             ],

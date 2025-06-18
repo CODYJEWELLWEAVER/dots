@@ -18,7 +18,8 @@ class Calendar(Box):
         super().__init__(
             name="calendar",
             orientation="v",
-            spacing=10,
+            spacing=20,
+            v_expand=True,
             h_align="center",
             v_align="center",
             **kwargs,
@@ -73,6 +74,7 @@ class Calendar(Box):
             orientation="v",
             spacing=2,
             h_align="center",
+            v_expand=True,
             children=self.get_day_buttons(),
             visible=True,
         )

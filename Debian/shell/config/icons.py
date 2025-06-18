@@ -68,7 +68,7 @@ arrow_left: str = "&#xea19;"
 
 arrow_right: str = "&#xea1f;"
 
-delete: str = "&#xf2b8;"
+delete: str = "&#xeb55;"
 
 refresh: str = "&#xeb13;"
 

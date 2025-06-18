@@ -88,7 +88,7 @@ class WeatherService(Service, Singleton):
                     self.temperature = current_temperature
         except Exception as exception:
             self.status = False
-            logger.warning(exception)
+            logger.warning(f"Could not fetch weather data: {exception}")
 
         return True
 

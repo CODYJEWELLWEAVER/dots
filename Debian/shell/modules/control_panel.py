@@ -11,8 +11,13 @@ from widgets.custom_image import CustomImage
 from config.profile import PROFILE_IMAGE_PATH
 from util.helpers import get_system_node_name, get_user_login_name
 from modules.network import NetworkOverview, ConnectionSettings
+from modules.notifications import NotificationsOverview
+from services.reminders import ReminderService
 
 from gi.repository import GdkPixbuf
+
+
+# TODO: Fix some small issues with the content stack and how the animations look
 
 
 class ControlPanel(Window):
@@ -29,8 +34,12 @@ class ControlPanel(Window):
             kwargs=kwargs,
         )
 
+        self.reminder_service = ReminderService.get_instance()
+
         self.network_overview = NetworkOverview(self.show_connections_view)
         self.connection_settings = ConnectionSettings(self.show_main_view)
+
+        self.notifications_overview = NotificationsOverview()
 
         self.profile_image = Box(
             name="profile-image-box",
@@ -52,38 +61,47 @@ class ControlPanel(Window):
 
         self.calendar = Calendar()
 
+        self.top_row = Box(
+            orientation="h",
+            spacing=40,
+            children=[
+                Box(
+                    orientation="v",
+                    spacing=20,
+                    h_align="center",
+                    v_align="center",
+                    children=[
+                        self.profile_image,
+                        self.system_name,
+                        self.datetime,
+                        self.weather_info,
+                    ],
+                ),
+                self.calendar,
+                self.notifications_overview,
+            ],
+        )
+
+        self.bottom_row = Box(
+            spacing=40,
+            orientation="h",
+            h_align="start",
+            children=[
+                self.network_overview,
+            ],
+        )
+
         self.main_view = Box(
             orientation="h",
             children=[
                 self.left_corner(),
                 Box(
                     style_classes="view-box",
-                    orientation="h",
                     spacing=40,
+                    orientation="v",
                     children=[
-                        Box(
-                            orientation="v",
-                            spacing=20,
-                            h_align="center",
-                            children=[
-                                self.profile_image,
-                                self.system_name,
-                                self.datetime,
-                                self.weather_info,
-                            ],
-                        ),
-                        Box(
-                            orientation="v",
-                            spacing=20,
-                            h_align="center",
-                            children=self.calendar,
-                        ),
-                        Box(
-                            orientation="v",
-                            spacing=20,
-                            h_align="center",
-                            children=self.network_overview,
-                        ),
+                        self.top_row,
+                        self.bottom_row,
                     ],
                 ),
                 self.right_corner(),
@@ -110,9 +128,10 @@ class ControlPanel(Window):
                 self.connections_view,
             ],
         )
+
         # allow stack to grow and shrink with each child
         self.content_stack.set_property("hhomogeneous", False)
-        self.content_stack.set_property("vhomogeneous", False)
+        # self.content_stack.set_property("vhomogeneous", False)
         self.show_main_view()
 
         self.children = self.content_stack
@@ -122,13 +141,13 @@ class ControlPanel(Window):
     def left_corner(self) -> Box:
         return Box(
             style_classes="corner-box",
-            children=Corner("top-right", name="left-corner", size=(225, 75)),
+            children=Corner("top-right", style_classes="left-corner", size=(225, 75)),
         )
 
     def right_corner(self) -> Box:
         return Box(
             style_classes="corner-box",
-            children=Corner("top-left", name="right-corner", size=(225, 75)),
+            children=Corner("top-left", style_classes="right-corner", size=(225, 75)),
         )
 
     def show_main_view(self, *args):

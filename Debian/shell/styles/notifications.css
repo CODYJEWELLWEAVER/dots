@@ -1,0 +1,55 @@
+#notifications-overview {
+    padding: 10px;
+    min-width: 500px;
+    background-color: var(--background-highlight);
+    box-shadow: 0px 0px 5px var(--background-highlight);
+}
+
+#notifications-list {
+    padding: 10px;
+}
+
+.notification-overview-element {
+    margin: 2px 0px;
+    padding: 10px;
+    background-color: var(--background-alt);
+    box-shadow: 0px 0px 5px var(--background-alt);
+}
+
+.notification-overview-element-app-name {
+    font-size: 18px;
+}
+
+.notification-overview-element-summary {
+    font-size: 22px;
+}
+
+.notification-overview-element-close-icon {
+    font-family: tabler-icons;
+}
+
+.notification-pop-up-element {
+    padding: 20px;
+    background-color: var(--background);
+}
+
+.notification-pop-up-element-summary{
+    font-size: 18px;
+}
+
+.notification-pop-up-element-app-name {
+    font-size: 18px;
+}
+
+.notification-pop-up-element-body {
+    min-width: 300px;
+    padding: 20px;
+}
+
+.notification-pop-up-element-image {
+    box-shadow: 0px 0px 5px var(--shadow);
+}
+
+.notification-pop-up-element-body-text {
+    font-size: 20px;
+}
