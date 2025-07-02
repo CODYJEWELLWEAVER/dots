@@ -10,17 +10,18 @@ from modules.calendar import Calendar
 from widgets.custom_image import CustomImage
 from config.profile import PROFILE_IMAGE_PATH
 from util.helpers import get_system_node_name, get_user_login_name
+from util.singleton import Singleton
 from modules.network import NetworkOverview, ConnectionSettings
 from modules.notifications import NotificationsOverview
 from services.reminders import ReminderService
+from modules.reminders import CreateReminder
 
 from gi.repository import GdkPixbuf
-
 
 # TODO: Fix some small issues with the content stack and how the animations look
 
 
-class ControlPanel(Window):
+class ControlPanel(Window, Singleton):
     def __init__(self, **kwargs):
         super().__init__(
             layer="overlay",
@@ -61,6 +62,10 @@ class ControlPanel(Window):
 
         self.calendar = Calendar()
 
+        self.create_reminder = CreateReminder(
+            on_clicked=self.show_reminder_creation_view
+        )
+
         self.top_row = Box(
             orientation="h",
             spacing=40,
@@ -88,6 +93,7 @@ class ControlPanel(Window):
             h_align="start",
             children=[
                 self.network_overview,
+                self.create_reminder,
             ],
         )
 
@@ -155,6 +161,9 @@ class ControlPanel(Window):
 
     def show_connections_view(self, *args):
         self.content_stack.set_visible_child(self.connections_view)
+
+    def show_reminder_creation_view(self, *args):
+        pass
 
 
 class ProfileImage(CustomImage):

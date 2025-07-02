@@ -72,6 +72,8 @@ delete: str = "&#xeb55;"
 
 refresh: str = "&#xeb13;"
 
+plus: str = "&#xeb0b;"
+
 weather = {
     "Clear-Night": "&#xece7;",
     "Clear-Day": "&#xeb30;",

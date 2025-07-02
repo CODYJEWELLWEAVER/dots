@@ -22,7 +22,7 @@ Status bar for shell.
 
 
 class Bar(Window):
-    def __init__(self, control_panel: ControlPanel, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(
             name="bar",
             layer="top",
@@ -31,7 +31,7 @@ class Bar(Window):
             **kwargs,
         )
 
-        self.control_panel = control_panel
+        self.control_panel = ControlPanel.get_instance()
 
         self.player_manager = Playerctl.PlayerManager()
         self.media = MediaControl(self.player_manager)

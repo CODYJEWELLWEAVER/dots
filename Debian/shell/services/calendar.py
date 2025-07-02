@@ -108,6 +108,7 @@ class CalendarService(Service, Singleton):
 
         if today != self.today:
             self.today = today
+            self.selected_date = today
 
         return True
 

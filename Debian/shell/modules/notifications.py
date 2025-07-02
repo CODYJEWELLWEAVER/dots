@@ -1,5 +1,5 @@
 from fabric.widgets.wayland import WaylandWindow as Window
-from fabric.notifications import Notifications as NotificationService, Notification
+from fabric.notifications import Notification
 from fabric.widgets.box import Box
 from fabric.widgets.label import Label
 from fabric.widgets.scrolledwindow import ScrolledWindow
@@ -7,14 +7,12 @@ from fabric.widgets.image import Image
 from fabric.widgets.button import Button
 from fabric.utils.helpers import bulk_connect, truncate
 
+from services.notifications import NotificationService
 from util.helpers import get_app_icon_pixbuf
 from util.ui import add_hover_cursor
 import config.icons as icons
 
 from gi.repository import GLib
-
-
-notification_service = NotificationService()
 
 
 class NotificationsOverview(Box):
@@ -23,7 +21,7 @@ class NotificationsOverview(Box):
             name="notifications-overview", spacing=20, orientation="v", **kwargs
         )
 
-        self.notification_service = notification_service
+        self.notification_service = NotificationService.get_instance()
 
         self.notifications_list = Box(
             name="notifications-list",
@@ -112,7 +110,7 @@ class NotificationPopUp(Window):
             **kwargs,
         )
 
-        self.notification_service = notification_service
+        self.notification_service = NotificationService.get_instance()
 
         self.notifications_list = Box(
             orientation="v",
@@ -129,18 +127,20 @@ class NotificationPopUp(Window):
         )
 
     def on_notification_added(self, notifications: NotificationService, id: int):
+        if len(self.notifications_list.children) == 3:
+            return
+
         notification = notifications.get_notification_from_id(id)
         notification_element = NotificationPopUpElement(notification)
-        self.notifications_list.add(notification_element)
+        children = self.notifications_list.children
+        children.insert(0, notification_element)
+        self.notifications_list.children = children
 
         if not self.get_visible():
             self.show_all()
 
-        if len(self.notifications_list.children) == 5:
-            self.notifications_list.remove(self.notifications_list.children[0])
-
         GLib.timeout_add(
-            5000,  # 5 sec
+            2500 + 1000 * len(self.notifications_list.children),
             lambda: self.hide_notification_pop_up(notification_element),
         )
 
@@ -208,7 +208,6 @@ class NotificationPopUpElement(Box):
                 style_classes="notification-pop-up-element-image",
                 pixbuf=image_pixbuf,
                 size=(100, 100),
-                h_expand=True,
             )
             body.add(image)
 

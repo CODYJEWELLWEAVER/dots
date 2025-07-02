@@ -22,8 +22,8 @@ def main():
 
     init_data_directory()
 
-    control_panel = ControlPanel()
-    bar = Bar(control_panel)
+    control_panel = ControlPanel.get_instance()
+    bar = Bar()
     notification_pop_up = NotificationPopUp()
 
     app = Application(

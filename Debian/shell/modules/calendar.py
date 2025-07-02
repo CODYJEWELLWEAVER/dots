@@ -8,6 +8,7 @@ from services.calendar import (
     CalendarService as CalendarService,
     USER_BIRTHDAY_IDENFIFIER,
 )
+from services.reminders import ReminderService, Reminder
 
 import config.icons as icons
 from util.ui import add_hover_cursor, toggle_visible
@@ -25,20 +26,23 @@ class Calendar(Box):
             **kwargs,
         )
 
-        self.service = CalendarService.get_instance()
+        self.calendar_service = CalendarService.get_instance()
+        self.reminder_service = ReminderService.get_instance()
 
         self.day_label = Label(
             style_classes="calendar-date-label",
-            label=self.service.selected_day,
+            label=self.calendar_service.selected_day,
             visible=False,
         )
 
         self.month_label = Label(
-            style_classes="calendar-date-label", label=self.service.selected_month
+            style_classes="calendar-date-label",
+            label=self.calendar_service.selected_month,
         )
 
         self.year_label = Label(
-            style_classes="calendar-date-label", label=self.service.selected_year
+            style_classes="calendar-date-label",
+            label=self.calendar_service.selected_year,
         )
 
         self.prev_month = Button(
@@ -120,10 +124,12 @@ class Calendar(Box):
             self.day_view,
         ]
 
-        self.service.connect("notify::selected-date", self.on_selected_date_changed)
+        self.calendar_service.connect(
+            "notify::selected-date", self.on_selected_date_changed
+        )
 
     def get_day_buttons(self) -> Iterable[Box]:
-        month_calendar = self.service.month_calendar
+        month_calendar = self.calendar_service.month_calendar
         weeks = []
 
         for i in range(0, len(month_calendar), 7):
@@ -133,8 +139,9 @@ class Calendar(Box):
                     children=[
                         DayButton(
                             day=date.day,
-                            in_cur_month=date.month == self.service.selected_date.month,
-                            name="today" if date == self.service.today else "",
+                            in_cur_month=date.month
+                            == self.calendar_service.selected_date.month,
+                            name="today" if date == self.calendar_service.today else "",
                             on_clicked=lambda b, date=date: self.do_select_day(date),
                         )
                         for date in month_calendar[i : min(i + 7, len(month_calendar))]
@@ -144,12 +151,13 @@ class Calendar(Box):
 
         return weeks
 
-    # TODO: Tidy this a bit
     def get_month_buttons(self, num_cols=3) -> Iterable[Box]:
-        current_month = self.service.current_month
-        selected_year = self.service.selected_date.year
-        current_year = self.service.today.year
-        month_names = [self.service.get_month_name(month) for month in range(1, 13)]
+        current_month = self.calendar_service.current_month
+        selected_year = self.calendar_service.selected_date.year
+        current_year = self.calendar_service.today.year
+        month_names = [
+            self.calendar_service.get_month_name(month) for month in range(1, 13)
+        ]
         month_enum = [(idx, month) for (idx, month) in enumerate(month_names, start=1)]
         months = []
 
@@ -175,7 +183,7 @@ class Calendar(Box):
         return months
 
     def add_holidays_to_day_view(self):
-        holiday_names = self.service.holidays
+        holiday_names = self.calendar_service.holidays
 
         for holiday in holiday_names:
             if USER_BIRTHDAY_IDENFIFIER in holiday:
@@ -184,22 +192,14 @@ class Calendar(Box):
 
             holiday_icon = self.get_holiday_icon(holiday)
 
-            self.day_view_list.add(
-                Box(
-                    spacing=20,
-                    orientation="h",
-                    h_expand=True,
-                    style_classes="holiday-box",
-                    children=[
-                        Label(style_classes="holiday-icon", markup=holiday_icon),
-                        Label(
-                            style_classes="holiday-name",
-                            label=holiday,
-                            line_wrap="char",
-                        ),
-                    ],
-                )
-            )
+            self.day_view_list.add(HolidayBox(holiday, holiday_icon))
+
+    def add_reminders_to_day_view(self):
+        selected_date = self.calendar_service.selected_date
+        reminders = self.reminder_service.get_reminders_by_date(selected_date)
+
+        for reminder in reminders:
+            self.day_view_list.add(ReminderBox(reminder))
 
     def get_holiday_icon(self, holiday_name):
         if "Birthday" and "Your" in holiday_name:
@@ -211,26 +211,27 @@ class Calendar(Box):
 
     def do_select_prev(self, button):
         if self.day_calendar.is_visible():
-            self.service.select_prev_month()
+            self.calendar_service.select_prev_month()
         elif self.day_view.is_visible():
-            self.service.select_prev_day()
+            self.calendar_service.select_prev_day()
         else:
-            self.service.select_prev_year()
+            self.calendar_service.select_prev_year()
 
     def do_select_next(self, button):
         if self.day_calendar.is_visible():
-            self.service.select_next_month()
+            self.calendar_service.select_next_month()
         elif self.day_view.is_visible():
-            self.service.select_next_day()
+            self.calendar_service.select_next_day()
         else:
-            self.service.select_next_year()
+            self.calendar_service.select_next_year()
 
     def do_select_month(self, month):
-        self.service.select_month(month)
+        self.calendar_service.select_month(month)
         self.do_swap_calendar()
 
+    # TODO: Fix all these toggle visible calls
     def do_select_day(self, date):
-        self.service.selected_date = date
+        self.calendar_service.selected_date = date
         toggle_visible(self.day_label)
         toggle_visible(self.day_calendar)
         toggle_visible(self.day_view)
@@ -250,6 +251,7 @@ class Calendar(Box):
         self.month_calendar.children = self.get_month_buttons()
         self.day_view_list.children = []  # clear children in day view
         self.add_holidays_to_day_view()
+        self.add_reminders_to_day_view()
         self.month_label.set_property("label", service.selected_month)
         self.year_label.set_property("label", service.selected_year)
         self.day_label.set_property("label", service.selected_day)
@@ -276,3 +278,36 @@ class MonthButton(Button):
             child=Label(label=month_name, style_classes="month-button-label"),
             **kwargs,
         )
+
+
+class HolidayBox(Box):
+    def __init__(self, holiday: str, holiday_icon: str, **kwargs):
+        super().__init__(
+            spacing=20,
+            orientation="h",
+            h_expand=True,
+            style_classes="holiday-box",
+            children=[
+                Label(style_classes="holiday-icon", markup=holiday_icon),
+                Label(
+                    style_classes="holiday-name",
+                    label=holiday,
+                    line_wrap="char",
+                ),
+            ],
+            **kwargs,
+        )
+
+
+class ReminderBox(Box):
+    def __init__(self, reminder: Reminder, **kwargs):
+        super().__init__(
+            spacing=20,
+            orientation="h",
+            h_expand=True,
+            style_classes="reminder-box",
+            children=[],
+            **kwargs,
+        )
+
+        # TODO: Add children

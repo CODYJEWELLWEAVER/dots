@@ -1,9 +1,9 @@
-import gi
 from gi.repository import Gtk, GdkPixbuf
 import os
 import platform
 import locale
 from pathlib import Path
+from datetime import time as Time
 
 from loguru import logger
 

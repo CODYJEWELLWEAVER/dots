@@ -46,10 +46,6 @@
     padding: 20px;
 }
 
-.notification-pop-up-element-image {
-    box-shadow: 0px 0px 5px var(--shadow);
-}
-
 .notification-pop-up-element-body-text {
     font-size: 20px;
 }
