@@ -59,7 +59,7 @@
 
 #password-entry {
     min-width: 200px;
-    padding: 10px;
+    padding: 20px;
     background-color: var(--background-highlight);
     box-shadow: 0px 0px 5px var(--background-highlight);
 }

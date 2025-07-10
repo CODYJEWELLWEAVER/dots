@@ -3,7 +3,6 @@ import os
 import platform
 import locale
 from pathlib import Path
-from datetime import time as Time
 
 from loguru import logger
 
@@ -43,7 +42,7 @@ def get_country_code():
     try:
         language_code = locale.getlocale()[0]
         return language_code.split("_")[1]
-    except:
+    except IndexError:
         logger.warning("Could not find current country code, defaulting to US.")
     finally:
         return "US"

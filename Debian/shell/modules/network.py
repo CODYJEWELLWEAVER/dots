@@ -7,7 +7,7 @@ from fabric.widgets.entry import Entry
 from fabric.utils.helpers import truncate, bulk_connect
 
 from services.network import NetworkService
-import config.icons as icons
+import config.icons as Icons
 from util.ui import add_hover_cursor
 
 import gi
@@ -25,19 +25,19 @@ def get_connection_id(connection: NM.ActiveConnection) -> str:
 
 def get_connection_icon(connection: NM.ActiveConnection | NM.RemoteConnection):
     return (
-        icons.wifi if "wireless" in connection.get_connection_type() else icons.ethernet
+        Icons.wifi if "wireless" in connection.get_connection_type() else Icons.ethernet
     )
 
 
 def get_strength_icon(strength: int) -> str:
     if strength >= 80:
-        return icons.wifi_signal_strong
+        return Icons.wifi_signal_strong
     elif strength >= 60:
-        return icons.wifi_signal_good
+        return Icons.wifi_signal_good
     elif strength >= 40:
-        return icons.wifi_signal_fair
+        return Icons.wifi_signal_fair
     else:
-        return icons.wifi_signal_weak
+        return Icons.wifi_signal_weak
 
 
 class NetworkOverview(Box):
@@ -60,7 +60,7 @@ class NetworkOverview(Box):
 
         # Toggle Wireless Control
         self.toggle_wifi_icon = Label(
-            style_classes="network-control-icon", markup=icons.wifi
+            style_classes="network-control-icon", markup=Icons.wifi
         )
         self.toggle_wifi_label = Label(
             style_classes="network-control-label",
@@ -86,7 +86,7 @@ class NetworkOverview(Box):
             label=get_connection_id(self._active_wifi_connection),
         )
         self.wifi_status_icon = Label(
-            style_classes="network-control-icon", markup=icons.link
+            style_classes="network-control-icon", markup=Icons.link
         )
         self.wifi_child_box = Box(
             spacing=10,
@@ -107,7 +107,7 @@ class NetworkOverview(Box):
 
         self.children = [
             Box(
-                spacing=10,
+                spacing=5,
                 orientation="h",
                 h_expand=True,
                 h_align="fill",
@@ -130,7 +130,7 @@ class NetworkOverview(Box):
         wifi_enabled = service.wifi_enabled
         self.toggle_wifi_icon = Label(
             style_classes="network-control-icon",
-            markup=icons.wifi if wifi_enabled else icons.wifi_off,
+            markup=Icons.wifi if wifi_enabled else Icons.wifi_off,
         )
         self.toggle_wifi_label.set_property(
             "label",
@@ -148,9 +148,9 @@ class NetworkOverview(Box):
         )
 
         if self._active_wifi_connection is None:
-            status_icon = icons.link_off
+            status_icon = Icons.link_off
         else:
-            status_icon = icons.link
+            status_icon = Icons.link
         self.wifi_status_icon = Label(
             style_classes="network-control-icon", markup=status_icon
         )
@@ -200,7 +200,7 @@ class ConnectionSettings(Box):
         )
 
         self.request_scan_button = Button(
-            child=Label(style_classes="connection-settings-icon", markup=icons.refresh),
+            child=Label(style_classes="connection-settings-icon", markup=Icons.refresh),
             on_clicked=lambda *_: self.network_service.request_scan(),
         )
         add_hover_cursor(self.request_scan_button)
@@ -238,7 +238,7 @@ class ConnectionSettings(Box):
                         name="close-connection-settings-button",
                         child=Label(
                             style_classes="connection-settings-icon",
-                            markup=icons.arrow_right,
+                            markup=Icons.arrow_right,
                         ),
                         on_clicked=on_close,
                     )
@@ -376,17 +376,19 @@ class ConnectionElement(Box):
             style_classes="toggle-connection-active-button",
             child=Label(
                 style_classes="connection-element-icon",
-                markup=icons.active_connection
+                markup=Icons.active_connection
                 if is_active
-                else icons.inactive_connection,
+                else Icons.inactive_connection,
             ),
             on_clicked=toggle_active_callback,
         )
         add_hover_cursor(toggle_active_button)
 
         delete_button = Button(
+            h_expand=True,
+            h_align="end",
             style_classes="delete-connection-button",
-            child=Label(style_classes="connection-settings-icon", markup=icons.delete),
+            child=Label(style_classes="connection-settings-icon", markup=Icons.delete),
             on_clicked=delete_callback,
         )
         add_hover_cursor(delete_button)
@@ -396,7 +398,6 @@ class ConnectionElement(Box):
             spacing=10,
             style_classes="connection-settings-element",
             children=[
-                delete_button,
                 Label(
                     style_classes="connection-settings-icon",
                     markup=connection_icon,
@@ -406,6 +407,7 @@ class ConnectionElement(Box):
                     style_classes="connection-element-label",
                     label=connection_id,
                 ),
+                delete_button,
             ],
             **kwargs,
         )
@@ -436,7 +438,7 @@ class AccessPointElement(Box):
         connect_button = Button(
             child=Label(
                 style_classes="connection-settings-icon",
-                markup=icons.link_add,
+                markup=Icons.link_add,
             ),
             on_clicked=connect_callback,
         )
@@ -449,7 +451,7 @@ class AccessPointElement(Box):
             children=[
                 Label(
                     style_classes="connection-settings-icon",
-                    markup=icons.locked if ap_info.is_secured else icons.unlocked,
+                    markup=Icons.locked if ap_info.is_secured else Icons.unlocked,
                 ),
                 connect_button,
                 Label(

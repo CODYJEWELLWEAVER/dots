@@ -4,7 +4,7 @@ from fabric.widgets.button import Button
 from fabric.widgets.box import Box
 from fabric.utils import exec_shell_command
 
-import config.icons as icons
+import config.icons as Icons
 from util.ui import add_hover_cursor, toggle_visible
 
 
@@ -21,7 +21,7 @@ class PowerControl(Box):
 
         self.power_menu_toggle = Button(
             name="power-menu-toggle",
-            child=Label(style_classes="power-menu-toggle-icon", markup=icons.power),
+            child=Label(style_classes="power-menu-toggle-icon", markup=Icons.power),
             on_clicked=lambda *_: toggle_visible(self.power_menu),
         )
         add_hover_cursor(self.power_menu_toggle)
@@ -58,28 +58,28 @@ class PowerMenu(Window):
         )
 
         self.lock_button = Button(
-            child=Label(style_classes="power-menu-icon", markup=icons.lock),
+            child=Label(style_classes="power-menu-icon", markup=Icons.lock),
             style_classes="power-menu-button",
             on_clicked=self.lock_screen,
         )
         add_hover_cursor(self.lock_button)
 
         self.reboot_button = Button(
-            child=Label(style_classes="power-menu-icon", markup=icons.reboot),
+            child=Label(style_classes="power-menu-icon", markup=Icons.reboot),
             style_classes="power-menu-button",
             on_clicked=self.show_reboot_dialog,
         )
         add_hover_cursor(self.reboot_button)
 
         self.suspend_button = Button(
-            child=Label(style_classes="power-menu-icon", markup=icons.suspend),
+            child=Label(style_classes="power-menu-icon", markup=Icons.suspend),
             style_classes="power-menu-button",
             on_clicked=self.show_suspend_dialog,
         )
         add_hover_cursor(self.suspend_button)
 
         self.power_off_button = Button(
-            child=Label(style_classes="power-menu-icon", markup=icons.power_off),
+            child=Label(style_classes="power-menu-icon", markup=Icons.power_off),
             style_classes="power-menu-button",
             on_clicked=self.show_shutdown_dialog,
         )

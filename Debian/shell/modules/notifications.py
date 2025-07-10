@@ -5,12 +5,12 @@ from fabric.widgets.label import Label
 from fabric.widgets.scrolledwindow import ScrolledWindow
 from fabric.widgets.image import Image
 from fabric.widgets.button import Button
-from fabric.utils.helpers import bulk_connect, truncate
+from fabric.utils.helpers import truncate
 
 from services.notifications import NotificationService
 from util.helpers import get_app_icon_pixbuf
 from util.ui import add_hover_cursor
-import config.icons as icons
+import config.icons as Icons
 
 from gi.repository import GLib
 
@@ -18,7 +18,11 @@ from gi.repository import GLib
 class NotificationsOverview(Box):
     def __init__(self, **kwargs):
         super().__init__(
-            name="notifications-overview", spacing=20, orientation="v", **kwargs
+            name="notifications-overview",
+            spacing=20,
+            orientation="v",
+            v_expand=True,
+            **kwargs,
         )
 
         self.notification_service = NotificationService.get_instance()
@@ -28,9 +32,13 @@ class NotificationsOverview(Box):
             orientation="v",
             spacing=10,
             h_expand=True,
+            v_expand=True,
         )
         self.notifications_view = ScrolledWindow(
-            name="notifications-view", h_expand=True, child=self.notifications_list
+            name="notifications-view",
+            h_expand=True,
+            v_expand=True,
+            child=self.notifications_list,
         )
 
         self.children = [
@@ -90,7 +98,7 @@ class NotificationOverviewElement(Box):
         close_button = Button(
             child=Label(
                 style_classes="notification-overview-element-close-icon",
-                markup=icons.delete,
+                markup=Icons.delete,
             ),
             on_clicked=lambda *_: notification.close(),
         )

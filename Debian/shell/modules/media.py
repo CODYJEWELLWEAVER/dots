@@ -17,7 +17,7 @@ from widgets.custom_image import CustomImage
 from util.ui import add_hover_cursor, toggle_visible
 from util.helpers import get_file_path_from_mpris_url
 from config.media import HEADPHONES
-import config.icons as icons
+import config.icons as Icons
 
 
 """ Side Media control and info module. """
@@ -67,19 +67,19 @@ class MediaControl(Box):
         )
 
         self.output_control = Button(
-            child=Label(style_classes="media-control-icon", markup=icons.speaker),
+            child=Label(style_classes="media-control-icon", markup=Icons.speaker),
             on_clicked=self.swap_audio_sink,
         )
         add_hover_cursor(self.output_control)
 
         self.prev_track_control = Button(
-            child=Label(style_classes="media-control-icon", markup=icons.skip_prev),
+            child=Label(style_classes="media-control-icon", markup=Icons.skip_prev),
             on_clicked=self.skip_to_prev_track,
         )
         add_hover_cursor(self.prev_track_control)
 
         self.play_control_label = Label(
-            style_classes="media-control-icon", markup=icons.play
+            style_classes="media-control-icon", markup=Icons.play
         )
         self.play_control = Button(
             child=self.play_control_label,
@@ -88,7 +88,7 @@ class MediaControl(Box):
         add_hover_cursor(self.play_control)
 
         self.next_track_control = Button(
-            child=Label(style_classes="media-control-icon", markup=icons.skip_next),
+            child=Label(style_classes="media-control-icon", markup=Icons.skip_next),
             on_clicked=self.skip_to_next_track,
         )
         add_hover_cursor(self.next_track_control)
@@ -150,12 +150,12 @@ class MediaControl(Box):
         self.manager.manage_player(player)
 
     def on_play(self, player, status, manager):
-        label = Label(style_classes="media-control-icon", markup=icons.pause)
+        label = Label(style_classes="media-control-icon", markup=Icons.pause)
 
         self.play_control.children = label
 
     def on_pause(self, player, status, manager):
-        label = Label(style_classes="media-control-icon", markup=icons.play)
+        label = Label(style_classes="media-control-icon", markup=Icons.play)
 
         self.play_control.children = label
 
@@ -228,9 +228,9 @@ class MediaControl(Box):
 
     def on_speaker_changed(self, service):
         if service.speaker.name in HEADPHONES:
-            icon = icons.headphones
+            icon = Icons.headphones
         else:
-            icon = icons.speaker
+            icon = Icons.speaker
 
         label = Label(style_classes="media-control-icon", markup=icon)
 

@@ -14,7 +14,7 @@ from util.singleton import Singleton
 from modules.network import NetworkOverview, ConnectionSettings
 from modules.notifications import NotificationsOverview
 from services.reminders import ReminderService
-from modules.reminders import CreateReminder
+from modules.reminders import CreateReminderView
 
 from gi.repository import GdkPixbuf
 
@@ -60,11 +60,11 @@ class ControlPanel(Window, Singleton):
 
         self.weather_info = WeatherInfo(size="large")
 
-        self.calendar = Calendar()
-
-        self.create_reminder = CreateReminder(
-            on_clicked=self.show_reminder_creation_view
+        self.calendar = Calendar(
+            show_reminder_creation_view=self.show_reminder_creation_view
         )
+
+        self.create_reminder = CreateReminderView(self.show_main_view)
 
         self.top_row = Box(
             orientation="h",
@@ -88,12 +88,11 @@ class ControlPanel(Window, Singleton):
         )
 
         self.bottom_row = Box(
-            spacing=40,
+            spacing=20,
             orientation="h",
             h_align="start",
             children=[
                 self.network_overview,
-                self.create_reminder,
             ],
         )
 
@@ -123,21 +122,29 @@ class ControlPanel(Window, Singleton):
             ],
         )
 
+        self.create_reminder_view = Box(
+            orientation="h",
+            children=[
+                self.left_corner(),
+                self.create_reminder,
+                self.right_corner(),
+            ],
+        )
+
         self.content_stack = Stack(
             transition_type="over-down-up",
             transition_duration=250,
             interpolate_size=True,
             h_expand=True,
             v_expand=True,
-            children=[
-                self.main_view,
-                self.connections_view,
-            ],
+            children=[self.main_view, self.connections_view, self.create_reminder_view],
         )
 
         # allow stack to grow and shrink with each child
         self.content_stack.set_property("hhomogeneous", False)
+        # this would cause problems
         # self.content_stack.set_property("vhomogeneous", False)
+
         self.show_main_view()
 
         self.children = self.content_stack
@@ -163,7 +170,8 @@ class ControlPanel(Window, Singleton):
         self.content_stack.set_visible_child(self.connections_view)
 
     def show_reminder_creation_view(self, *args):
-        pass
+        self.create_reminder.set_date()
+        self.content_stack.set_visible_child(self.create_reminder_view)
 
 
 class ProfileImage(CustomImage):

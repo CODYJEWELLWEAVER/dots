@@ -4,7 +4,7 @@ from fabric.widgets.circularprogressbar import CircularProgressBar
 from fabric import Fabricator
 
 from services.network import NetworkService
-import config.icons as icons
+import config.icons as Icons
 from widgets.animated_circular_progress_bar import AnimatedCircularProgressBar
 
 import psutil
@@ -45,7 +45,7 @@ class CPUUsage(Box):
             style_classes="sys-info-box",
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",
-                icon=icons.cpu,
+                icon=Icons.cpu,
                 poll_func=lambda *_: psutil.cpu_percent(),
             ),
             **kwargs,
@@ -58,7 +58,7 @@ class GPUUsage(Box):
             style_classes="sys-info-box",
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",
-                icon=icons.gpu,
+                icon=Icons.gpu,
                 poll_func=self._get_usage,
             ),
         )
@@ -73,7 +73,7 @@ class RAM(Box):
             style_classes="sys-info-box",
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",
-                icon=icons.ram,
+                icon=Icons.ram,
                 poll_func=lambda *_: psutil.virtual_memory().percent,
             ),
             **kwargs,
@@ -86,7 +86,7 @@ class Disk(Box):
             style_classes="sys-info-box",
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",
-                icon=icons.disk,
+                icon=Icons.disk,
                 poll_func=lambda *_: psutil.disk_usage("/").percent,
             ),
             **kwargs,
@@ -129,11 +129,11 @@ class NetworkInfo(Box):
     def on_notify_connection_type(self, *args) -> None:
         connection_type = self.network_service.primary_connection_type
         if connection_type == "wireless":
-            icon = icons.wifi
+            icon = Icons.wifi
         elif connection_type == "ethernet":
-            icon = icons.ethernet
+            icon = Icons.ethernet
         else:
-            icon = icons.no_network
+            icon = Icons.no_network
 
         self.network_status_icon_box.children = Label(
             style_classes="sys-info-icon", markup=icon

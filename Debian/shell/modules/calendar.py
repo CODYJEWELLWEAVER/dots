@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Callable, Iterable
 from fabric.widgets.box import Box
 from fabric.widgets.label import Label
 from fabric.widgets.button import Button
@@ -9,13 +9,14 @@ from services.calendar import (
     USER_BIRTHDAY_IDENFIFIER,
 )
 from services.reminders import ReminderService, Reminder
+from modules.reminders import CreateReminderButton
 
-import config.icons as icons
+import config.icons as Icons
 from util.ui import add_hover_cursor, toggle_visible
 
 
 class Calendar(Box):
-    def __init__(self, **kwargs):
+    def __init__(self, show_reminder_creation_view, **kwargs):
         super().__init__(
             name="calendar",
             orientation="v",
@@ -25,6 +26,8 @@ class Calendar(Box):
             v_align="center",
             **kwargs,
         )
+
+        self.show_reminder_creation_view = show_reminder_creation_view
 
         self.calendar_service = CalendarService.get_instance()
         self.reminder_service = ReminderService.get_instance()
@@ -48,7 +51,7 @@ class Calendar(Box):
         self.prev_month = Button(
             style_classes="month-skip-button",
             child=Label(
-                markup=icons.arrow_left,
+                markup=Icons.arrow_left,
             ),
             on_clicked=self.do_select_prev,
         )
@@ -57,7 +60,7 @@ class Calendar(Box):
         self.next_month = Button(
             style_classes="month-skip-button",
             child=Label(
-                markup=icons.arrow_right,
+                markup=Icons.arrow_right,
             ),
             on_clicked=self.do_select_next,
         )
@@ -127,6 +130,8 @@ class Calendar(Box):
         self.calendar_service.connect(
             "notify::selected-date", self.on_selected_date_changed
         )
+
+        self.reminder_service.connect("changed", self.update_day_view_children)
 
     def get_day_buttons(self) -> Iterable[Box]:
         month_calendar = self.calendar_service.month_calendar
@@ -199,15 +204,23 @@ class Calendar(Box):
         reminders = self.reminder_service.get_reminders_by_date(selected_date)
 
         for reminder in reminders:
-            self.day_view_list.add(ReminderBox(reminder))
+            self.day_view_list.add(
+                ReminderBox(
+                    reminder,
+                    on_delete=lambda *_,
+                    _reminder=reminder: self.reminder_service.delete_reminder(
+                        _reminder
+                    ),
+                )
+            )
 
     def get_holiday_icon(self, holiday_name):
         if "Birthday" and "Your" in holiday_name:
-            return icons.holidays["User Birthday"]
-        elif holiday_name in icons.holidays:
-            return icons.holidays[holiday_name]
+            return Icons.holidays["User Birthday"]
+        elif holiday_name in Icons.holidays:
+            return Icons.holidays[holiday_name]
         else:
-            return icons.holidays["Default"]
+            return Icons.holidays["Default"]
 
     def do_select_prev(self, button):
         if self.day_calendar.is_visible():
@@ -237,24 +250,31 @@ class Calendar(Box):
         toggle_visible(self.day_view)
 
     def do_swap_calendar(self, *args):
+        toggle_visible(self.day_calendar)
         if self.day_view.is_visible():
-            toggle_visible(self.day_calendar)
             toggle_visible(self.day_view)
             toggle_visible(self.day_label)
         else:
-            toggle_visible(self.day_calendar)
             toggle_visible(self.month_calendar)
             toggle_visible(self.month_label)
 
     def on_selected_date_changed(self, service: CalendarService, _):
         self.day_calendar.children = self.get_day_buttons()
         self.month_calendar.children = self.get_month_buttons()
-        self.day_view_list.children = []  # clear children in day view
-        self.add_holidays_to_day_view()
-        self.add_reminders_to_day_view()
+
+        self.update_day_view_children()
+
         self.month_label.set_property("label", service.selected_month)
         self.year_label.set_property("label", service.selected_year)
         self.day_label.set_property("label", service.selected_day)
+
+    def update_day_view_children(self, *args):
+        self.day_view_list.children = []  # clear children in day view
+        self.add_holidays_to_day_view()
+        self.add_reminders_to_day_view()
+        self.day_view_list.add(
+            CreateReminderButton(on_clicked=self.show_reminder_creation_view)
+        )
 
 
 class DayButton(Button):
@@ -286,11 +306,11 @@ class HolidayBox(Box):
             spacing=20,
             orientation="h",
             h_expand=True,
-            style_classes="holiday-box",
+            style_classes="day-view-item",
             children=[
-                Label(style_classes="holiday-icon", markup=holiday_icon),
+                Label(style_classes="day-view-item-icon", markup=holiday_icon),
                 Label(
-                    style_classes="holiday-name",
+                    style_classes="day-view-item-label",
                     label=holiday,
                     line_wrap="char",
                 ),
@@ -300,14 +320,32 @@ class HolidayBox(Box):
 
 
 class ReminderBox(Box):
-    def __init__(self, reminder: Reminder, **kwargs):
+    def __init__(self, reminder: Reminder, on_delete: Callable, **kwargs):
+        reminder_label = reminder.title
+        if reminder.time is not None:
+            reminder_time = reminder.time.isoformat("minutes")
+            reminder_label += " @ " + reminder_time
+
         super().__init__(
             spacing=20,
             orientation="h",
             h_expand=True,
-            style_classes="reminder-box",
-            children=[],
+            style_classes="day-view-item",
+            children=[
+                Label(markup=Icons.reminder, style_classes="day-view-item-icon"),
+                Label(
+                    reminder_label,
+                    style_classes="day-view-item-label",
+                    line_wrap="char",
+                ),
+                Button(
+                    h_expand=True,
+                    h_align="end",
+                    child=Label(
+                        markup=Icons.delete, style_classes="day-view-item-icon"
+                    ),
+                    on_clicked=on_delete,
+                ),
+            ],
             **kwargs,
         )
-
-        # TODO: Add children

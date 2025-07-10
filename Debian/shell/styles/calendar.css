@@ -78,17 +78,17 @@
     box-shadow: 0px 0px 10px var(--highlight);
 }
 
-.holiday-icon {
-    font-family: tabler-icons;
-}
-
-.holiday-name {
-    font-size: 20px;
-}
-
-.holiday-box {
+.day-view-item {
     padding: 10px;
     background-color: var(--background-alt);
     margin: 10px;
     box-shadow: 0px 0px 5px var(--background-alt)
+}
+
+.day-view-item-label {
+    font-size: 24px;
+}
+
+.day-view-item-icon {
+    font-family: tabler-icons;
 }

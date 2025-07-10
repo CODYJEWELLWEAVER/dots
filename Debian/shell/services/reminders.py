@@ -1,5 +1,4 @@
 from fabric.core.service import Service, Property, Signal
-from fabric.utils.helpers import invoke_repeater
 from gi.repository import GLib
 
 from util.singleton import Singleton
@@ -34,6 +33,8 @@ class Reminder:
         self.title = title
         self.date = date
         self.time = time
+
+        self.notification_ids = []
 
     def to_json_obj(self) -> dict:
         return {
@@ -88,11 +89,17 @@ class Reminder:
 
     def send_notification(self):
         self.notification_service.send_internal_notification(self.to_variant())
+        return False
 
-    def schedule_notifications(self):
+    def schedule_notifications(self) -> list[int]:
+        notification_ids = []
+
         if self.date == Date.today():
             if self.time is None:
-                GLib.timeout_add_seconds(ALL_DAY_REMINDER_DELAY, self.send_notification)
+                notif_id = GLib.timeout_add_seconds(
+                    ALL_DAY_REMINDER_DELAY, self.send_notification
+                )
+                notification_ids.append(notif_id)
             else:
                 now = Datetime.now()
                 reminder_datetime = Datetime.combine(self.date, self.time)
@@ -109,7 +116,12 @@ class Reminder:
                     ]
 
                     for timeout in timeouts:
-                        GLib.timeout_add_seconds(timeout, self.send_notification)
+                        notif_id = GLib.timeout_add_seconds(
+                            timeout, self.send_notification
+                        )
+                        notification_ids.append(notif_id)
+
+        return notification_ids
 
 
 class ReminderService(Service, Singleton):
@@ -128,6 +140,7 @@ class ReminderService(Service, Singleton):
 
         self._path = None
         self._reminders: dict = None
+        self._notifications: dict = {}
 
         self.init_reminders_file()
 
@@ -143,10 +156,13 @@ class ReminderService(Service, Singleton):
     def add_reminder(self, reminder: Reminder) -> None:
         """Used to create a new reminder or update an existing reminder."""
         self._reminders[reminder.id] = reminder.to_json_obj()
+        notificaiton_ids = reminder.schedule_notifications()
+        self._notifications[reminder.id] = notificaiton_ids
         self.commit_changes()
 
     def delete_reminder(self, reminder: Reminder) -> None:
         self._reminders.pop(reminder.id)
+        self.remove_notifications(reminder.id)
         self.commit_changes()
 
     def is_initialized(self) -> bool:
@@ -166,8 +182,10 @@ class ReminderService(Service, Singleton):
                 json.dump(dict(), self._path.open("w"))
 
             json_file = self._path.open("r+")
-        except:
-            logger.error("Could not initialize reminders json file.")
+        except Exception as e:
+            logger.error(
+                f"Could not initialize reminders json file. Encountered error {e}"
+            )
         else:
             with json_file:
                 self._reminders = json.load(json_file)
@@ -179,4 +197,9 @@ class ReminderService(Service, Singleton):
 
     def setup_notifications(self) -> None:
         for reminder in self.reminders:
-            reminder.schedule_notifications()
+            notifcation_ids = reminder.schedule_notifications()
+            self._notifications[reminder.id] = notifcation_ids
+
+    def remove_notifications(self, reminder_id: int) -> None:
+        for id in self._notifications.pop(reminder_id, []):
+            GLib.source_remove(id)

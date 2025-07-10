@@ -7,7 +7,7 @@ from gi.repository import GObject
 
 from services.weather import WeatherService
 
-import config.icons as icons
+import config.icons as Icons
 
 
 SECONDS_PER_DAY = 86400
@@ -15,8 +15,8 @@ SECONDS_PER_HOUR = 3600
 
 
 def lookup_weather_icon(group):
-    if group in icons.weather:
-        return icons.weather[group]
+    if group in Icons.weather:
+        return Icons.weather[group]
     else:
         return None
 
@@ -53,7 +53,7 @@ class WeatherInfo(Box):
 
         self.weather_icon_box = Box(
             children=Label(
-                style_classes="weather-icon", markup=icons.weather["Clear-Day"]
+                style_classes="weather-icon", markup=Icons.weather["Clear-Day"]
             )
         )
         self.temperature = Label(
@@ -61,7 +61,7 @@ class WeatherInfo(Box):
             label="",
         )
         self.temperature_icon = Label(
-            style_classes="weather-icon", markup=icons.fahrenheit
+            style_classes="weather-icon", markup=Icons.fahrenheit
         )
 
         # run callbacks to initialize

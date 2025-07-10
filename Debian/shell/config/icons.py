@@ -68,11 +68,17 @@ arrow_left: str = "&#xea19;"
 
 arrow_right: str = "&#xea1f;"
 
+arrow_up: str = "&#xea25;"
+
+arrow_down: str = "&#xea16;"
+
 delete: str = "&#xeb55;"
 
 refresh: str = "&#xeb13;"
 
 plus: str = "&#xeb0b;"
+
+reminder: str = "&#xfd2e;"
 
 weather = {
     "Clear-Night": "&#xece7;",
