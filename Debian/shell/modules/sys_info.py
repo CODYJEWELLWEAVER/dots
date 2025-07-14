@@ -121,12 +121,13 @@ class NetworkInfo(Box):
         self.children = self.network_status_bar
 
         self.network_service.connect(
-            "notify::connection-type", self.on_notify_connection_type
+            "notify::primary-connection-type", self.on_notify_connection_type
         )
         # run once to make sure the status label is initialized
         self.on_notify_connection_type()
 
     def on_notify_connection_type(self, *args) -> None:
+        print(self.network_service.primary_connection_type)
         connection_type = self.network_service.primary_connection_type
         if connection_type == "wireless":
             icon = Icons.wifi

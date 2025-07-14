@@ -5,7 +5,9 @@ from util.singleton import Singleton
 from config.reminders import (
     REMINDERS_JSON_PATH,
     ALL_DAY_REMINDER_DELAY,
+    NEXT_DAY_REMINDER_DELAY,
     REMINDER_INTERVAL_DELTAS,
+    DELETE_REMINDER_DELTA
 )
 from config.storage import STORAGE_DIRECTORY
 from services.notifications import NotificationService
@@ -16,7 +18,7 @@ from pathlib import Path
 import json
 from loguru import logger
 import uuid
-from datetime import date as Date, time as Time, datetime as Datetime
+from datetime import date as Date, time as Time, datetime as Datetime, timedelta
 
 
 class Reminder:
@@ -121,6 +123,11 @@ class Reminder:
                         )
                         notification_ids.append(notif_id)
 
+        if self.date == Date.today() + timedelta(days=1):
+            notif_id = GLib.timeout_add_seconds(
+                NEXT_DAY_REMINDER_DELAY, self.send_notification
+            )
+
         return notification_ids
 
 
@@ -143,6 +150,8 @@ class ReminderService(Service, Singleton):
         self._notifications: dict = {}
 
         self.init_reminders_file()
+
+        self.clean_reminders()
 
         self.setup_notifications()
 
@@ -203,3 +212,9 @@ class ReminderService(Service, Singleton):
     def remove_notifications(self, reminder_id: int) -> None:
         for id in self._notifications.pop(reminder_id, []):
             GLib.source_remove(id)
+
+    def clean_reminders(self) -> None:
+        # remove reminders 90 days or older.
+        for reminder in self.reminders:
+            if reminder.date + DELETE_REMINDER_DELTA <= Date.today():
+                self.delete_reminder(reminder)

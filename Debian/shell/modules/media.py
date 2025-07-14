@@ -27,7 +27,7 @@ import config.icons as Icons
 
 
 class MediaControl(Box):
-    def __init__(self, manager, **kwargs):
+    def __init__(self, player_manager, **kwargs):
         super().__init__(
             name="media-control",
             spacing=10,
@@ -36,7 +36,7 @@ class MediaControl(Box):
             **kwargs,
         )
 
-        self.manager = manager
+        self.manager = player_manager
         self.audio = Audio()
         self.pulse = pulsectl.Pulse()
         self.media_panel = MediaPanel()
@@ -116,10 +116,10 @@ class MediaControl(Box):
             self.volume_scale,
         ]
 
-        for name in manager.props.player_names:
+        for name in player_manager.props.player_names:
             self.init_player(name)
 
-        manager.connect("name-appeared", self.on_name_appeared)
+        player_manager.connect("name-appeared", self.on_name_appeared)
 
         self.audio.connect("speaker_changed", self.on_speaker_changed)
 

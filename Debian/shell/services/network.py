@@ -238,10 +238,12 @@ class NetworkService(Service, Singleton):
     @logger.catch
     def activate_finish_callback(self, device, result, data):
         self._client.activate_connection_finish(result)
+        self.notify("primary-connection-type")
 
     @logger.catch
     def deactivate_finish_callback(self, device, result, data):
         self._client.deactivate_connection_finish(result)
+        self.notify("primary-connection-type")
 
     def request_scan(self):
         if self._client.wireless_get_enabled():
@@ -257,7 +259,7 @@ class NetworkService(Service, Singleton):
 
     def on_active_connection(self, client, connection):
         self.notify("active-connections")
-        self.notify("connection-type")
+        self.notify("primary-connection-type")
         self.notify("wifi-connection")
 
     def on_connection(self, client, connection):

@@ -87,12 +87,13 @@ class CreateReminderView(Box):
             )
         )
 
-        self.add(
-            Button(
-                child=Label(markup=Icons.arrow_right),
-                on_clicked=self.on_close,
-            )
+        back_button = Button(
+            child=Label(markup=Icons.arrow_right),
+            on_clicked=self.on_close,
         )
+        add_hover_cursor(back_button)
+
+        self.add(back_button)
 
         self.calendar_service = CalendarService.get_instance()
         self.set_date()

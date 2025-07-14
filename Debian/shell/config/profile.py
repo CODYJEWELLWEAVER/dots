@@ -1,1 +1,1 @@
-PROFILE_IMAGE_PATH = "shell/assets/wizard.jpg"
+PROFILE_IMAGE_PATH = "/home/cody/Fabric/shell/assets/wizard.jpg"

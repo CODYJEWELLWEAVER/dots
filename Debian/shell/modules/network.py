@@ -205,6 +205,16 @@ class ConnectionSettings(Box):
         )
         add_hover_cursor(self.request_scan_button)
 
+        back_button = Button(
+            name="close-connection-settings-button",
+            child=Label(
+                style_classes="connection-settings-icon",
+                markup=Icons.arrow_right,
+            ),
+            on_clicked=on_close,
+        )
+        add_hover_cursor(back_button)
+
         self.overview_box = Box(
             name="connection-settings-overview",
             orientation="h",
@@ -233,16 +243,7 @@ class ConnectionSettings(Box):
                         self.access_points_view,
                     ],
                 ),
-                Box(
-                    children=Button(
-                        name="close-connection-settings-button",
-                        child=Label(
-                            style_classes="connection-settings-icon",
-                            markup=Icons.arrow_right,
-                        ),
-                        on_clicked=on_close,
-                    )
-                ),
+                Box(v_expand=False, children=back_button),
             ],
         )
 
