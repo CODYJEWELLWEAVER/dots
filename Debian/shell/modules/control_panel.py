@@ -40,7 +40,9 @@ class ControlPanel(Window, Singleton):
         self.network_overview = NetworkOverview(self.show_connections_view)
         self.connection_settings = ConnectionSettings(self.show_main_view)
 
-        self.notifications_overview = NotificationsOverview()
+        self.notifications_overview = NotificationsOverview(
+            on_switch=self.show_to_do_list
+        )
 
         self.profile_image = Box(
             name="profile-image-box",
@@ -60,30 +62,44 @@ class ControlPanel(Window, Singleton):
 
         self.weather_info = WeatherInfo(size="large")
 
+        self.profile_box = Box(
+            orientation="v",
+            spacing=20,
+            h_align="center",
+            v_align="center",
+            children=[
+                self.profile_image,
+                self.system_name,
+                self.datetime,
+                self.weather_info,
+            ],
+        )
+
         self.calendar = Calendar(
             show_reminder_creation_view=self.show_reminder_creation_view
         )
 
-        self.create_reminder = CreateReminderView(self.show_main_view)
+        self.create_reminder = CreateReminderView(on_close=self.show_main_view)
+
+        self.productivity_stack = Stack(
+            transition_duration=400,
+            transition_type='over-left-right',
+            name="productivity-stack",
+            children=[
+                self.notifications_overview
+            ]
+        )
+
+        self.productivity_stack.set_hhomogeneous(True)
+        self.productivity_stack.set_vhomogeneous(True)
 
         self.top_row = Box(
             orientation="h",
             spacing=40,
             children=[
-                Box(
-                    orientation="v",
-                    spacing=20,
-                    h_align="center",
-                    v_align="center",
-                    children=[
-                        self.profile_image,
-                        self.system_name,
-                        self.datetime,
-                        self.weather_info,
-                    ],
-                ),
+                self.profile_box,
                 self.calendar,
-                self.notifications_overview,
+                self.productivity_stack,
             ],
         )
 
@@ -131,7 +147,7 @@ class ControlPanel(Window, Singleton):
             ],
         )
 
-        self.content_stack = Stack(
+        self.main_content_stack = Stack(
             transition_type="over-down-up",
             transition_duration=250,
             interpolate_size=True,
@@ -141,13 +157,11 @@ class ControlPanel(Window, Singleton):
         )
 
         # allow stack to grow and shrink with each child
-        self.content_stack.set_property("hhomogeneous", False)
-        # this would cause problems
-        # self.content_stack.set_property("vhomogeneous", False)
+        self.main_content_stack.set_hhomogeneous(False)
 
         self.show_main_view()
 
-        self.children = self.content_stack
+        self.children = self.main_content_stack
 
         self.connect("focus-out-event", lambda *_: self.hide())
 
@@ -164,14 +178,17 @@ class ControlPanel(Window, Singleton):
         )
 
     def show_main_view(self, *args):
-        self.content_stack.set_visible_child(self.main_view)
+        self.main_content_stack.set_visible_child(self.main_view)
 
     def show_connections_view(self, *args):
-        self.content_stack.set_visible_child(self.connections_view)
+        self.main_content_stack.set_visible_child(self.connections_view)
 
     def show_reminder_creation_view(self, *args):
         self.create_reminder.set_date()
-        self.content_stack.set_visible_child(self.create_reminder_view)
+        self.main_content_stack.set_visible_child(self.create_reminder_view)
+
+    def show_to_do_list(self, *args):
+        pass
 
 
 class ProfileImage(CustomImage):

@@ -1,3 +1,4 @@
+from typing import Callable
 from fabric.widgets.wayland import WaylandWindow as Window
 from fabric.notifications import Notification
 from fabric.widgets.box import Box
@@ -16,7 +17,7 @@ from gi.repository import GLib
 
 
 class NotificationsOverview(Box):
-    def __init__(self, **kwargs):
+    def __init__(self, on_switch: Callable, **kwargs):
         super().__init__(
             name="notifications-overview",
             spacing=20,
@@ -41,9 +42,19 @@ class NotificationsOverview(Box):
             child=self.notifications_list,
         )
 
-        self.children = [
-            Label(
+        self.switch_button = Button(
+            style_classes="productivity-switch-button",
+            child=Label(
                 label="Notifications",
+            ),
+            on_clicked=on_switch
+        )
+        add_hover_cursor(self.switch_button)
+
+        self.children = [
+            Box(
+                h_align="center",
+                children=self.switch_button
             ),
             self.notifications_view,
         ]
@@ -110,10 +121,10 @@ class NotificationPopUp(Window):
     def __init__(self, **kwargs):
         super().__init__(
             layer="overlay",
-            anchor="bottom center",
+            anchor="right center",
             exclusivity="none",
             title="fabric-notifications-pop-up",
-            margin="0px 0px 20px 0px",
+            margin="0px 20px 0px 0px",
             visible=False,
             **kwargs,
         )
@@ -215,7 +226,7 @@ class NotificationPopUpElement(Box):
             image = Image(
                 style_classes="notification-pop-up-element-image",
                 pixbuf=image_pixbuf,
-                size=(100, 100),
+                size=(25, 25),
             )
             body.add(image)
 

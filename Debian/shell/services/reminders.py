@@ -29,9 +29,9 @@ class Reminder:
         title: str,
         date: Date,
         time: Time | None = None,
-        id: str = str(uuid.uuid4()),
+        id: str | None = None,
     ):
-        self.id = id
+        self.id = id if id is not None else str(uuid.uuid4())
         self.title = title
         self.date = date
         self.time = time
@@ -62,7 +62,6 @@ class Reminder:
     def update(
         self,
         title: str | None = None,
-        icon: str | None = None,
         date: Date | None = None,
         time: Time | None = None,
     ) -> None:
