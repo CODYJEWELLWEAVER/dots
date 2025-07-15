@@ -10,6 +10,7 @@
 @import url(./styles/network.css);
 @import url(./styles/notifications.css);
 @import url(./styles/reminders.css);
+@import url(./styles/osd.css);
 
 * {
     all: unset;

@@ -15,7 +15,15 @@ Module for displaying power options.
 
 class PowerControl(Box):
     def __init__(self, **kwargs):
-        super().__init__(name="power-menu", keyboard_mode="on-demand", **kwargs)
+        super().__init__(
+            name="power-menu",
+            h_align="center",
+            v_align="center",
+            v_expand=True,
+            h_expand=True,
+            keyboard_mode="on-demand",
+            **kwargs,
+        )
 
         self.power_menu = PowerMenu()
 

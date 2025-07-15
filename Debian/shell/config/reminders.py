@@ -4,7 +4,7 @@ REMINDERS_JSON_PATH = "reminders.json"
 
 ALL_DAY_REMINDER_DELAY = 30  # seconds
 
-NEXT_DAY_REMINDER_DELAY = 60 # seconds
+NEXT_DAY_REMINDER_DELAY = 60  # seconds
 
 DELETE_REMINDER_DELTA = timedelta(days=90)
 

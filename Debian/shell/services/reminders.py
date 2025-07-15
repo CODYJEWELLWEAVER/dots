@@ -7,7 +7,7 @@ from config.reminders import (
     ALL_DAY_REMINDER_DELAY,
     NEXT_DAY_REMINDER_DELAY,
     REMINDER_INTERVAL_DELTAS,
-    DELETE_REMINDER_DELTA
+    DELETE_REMINDER_DELTA,
 )
 from config.storage import STORAGE_DIRECTORY
 from services.notifications import NotificationService

@@ -42,6 +42,8 @@ class SysInfoCircularBar(AnimatedCircularProgressBar):
 class CPUUsage(Box):
     def __init__(self, **kwargs):
         super().__init__(
+            h_align="center",
+            v_align="center",
             style_classes="sys-info-box",
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",
@@ -55,6 +57,8 @@ class CPUUsage(Box):
 class GPUUsage(Box):
     def __init__(self, **kwargs):
         super().__init__(
+            h_align="center",
+            v_align="center",
             style_classes="sys-info-box",
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",
@@ -70,6 +74,8 @@ class GPUUsage(Box):
 class RAM(Box):
     def __init__(self, **kwargs):
         super().__init__(
+            h_align="center",
+            v_align="center",
             style_classes="sys-info-box",
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",
@@ -83,6 +89,8 @@ class RAM(Box):
 class Disk(Box):
     def __init__(self, **kwargs):
         super().__init__(
+            h_align="center",
+            v_align="center",
             style_classes="sys-info-box",
             children=SysInfoCircularBar(
                 style_classes="sys-info-circular-bar",

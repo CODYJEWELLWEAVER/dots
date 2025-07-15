@@ -1,0 +1,14 @@
+#osd-volume-icon {
+    font-family: tabler-icons;
+    font-size: 60px;
+}
+
+#osd-volume-percent {
+    font-size: 40px;
+}
+
+#osd-content-stack {
+    background-color: var(--background);
+    padding: 40px;
+    min-width: 150px;
+}

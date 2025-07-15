@@ -80,6 +80,14 @@ plus: str = "&#xeb0b;"
 
 reminder: str = "&#xfd2e;"
 
+volume_muted: str = "&#xf1c3;"
+
+volume_high: str = "&#xeb51;"
+
+volume_low: str = "&#xeb4f;"
+
+volume_off: str = "&#xeb50;"
+
 weather = {
     "Clear-Night": "&#xece7;",
     "Clear-Day": "&#xeb30;",

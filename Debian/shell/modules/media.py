@@ -5,7 +5,6 @@ from fabric.widgets.button import Button
 from fabric.audio.service import Audio
 from fabric.widgets.wayland import WaylandWindow as Window
 from fabric.widgets.scale import Scale
-from fabric.core.fabricator import Fabricator
 from fabric.utils import truncate, bulk_connect
 
 from gi.repository import Playerctl, GdkPixbuf
@@ -13,6 +12,7 @@ from gi.repository import Playerctl, GdkPixbuf
 import pulsectl
 from loguru import logger
 
+from services.volume import VolumeService
 from widgets.custom_image import CustomImage
 from util.ui import add_hover_cursor, toggle_visible
 from util.helpers import get_file_path_from_mpris_url
@@ -39,6 +39,7 @@ class MediaControl(Box):
         self.manager = player_manager
         self.audio = Audio()
         self.pulse = pulsectl.Pulse()
+        self.volume_service = VolumeService.get_instance()
         self.media_panel = MediaPanel()
 
         self.title = Label(
@@ -97,15 +98,10 @@ class MediaControl(Box):
             name="volume-scale",
             increments=(0.01, 0.1),
             h_align="center",
+            value=self.volume_service.volume,
         )
         self.volume_scale.connect("change-value", self.on_volume_slider_value_change)
         add_hover_cursor(self.volume_scale)
-
-        self.pulse_volume_fab = Fabricator(
-            poll_from=self.get_pulse_volume,
-            interval=100,
-            on_changed=self.set_volume_scale_value,
-        )
 
         self.children = [
             self.media_info,
@@ -123,8 +119,11 @@ class MediaControl(Box):
 
         self.audio.connect("speaker_changed", self.on_speaker_changed)
 
-    def set_volume_scale_value(self, fabricator, value):
-        self.volume_scale.value = value
+        self.volume_service.connect("changed", self.set_volume_scale_value)
+
+    def set_volume_scale_value(self, *args):
+        volume = self.volume_service.volume if not self.volume_service.is_muted else 0
+        self.volume_scale.value = volume
 
     def toggle_play_pause(self, *args):
         players = self.manager.props.players

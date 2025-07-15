@@ -100,7 +100,11 @@ class NetworkService(Service, Singleton):
 
     @Property(List[NM.AccessPoint], flags="readable")
     def access_points(self) -> List[NM.AccessPoint]:
-        return self._wifi_device.get_access_points()
+        return (
+            self._wifi_device.get_access_points()
+            if self._wifi_device is not None
+            else []
+        )
 
     def get_default_wifi_device(self) -> NM.DeviceWifi | None:
         wifi_devices = self.get_wifi_devices()
@@ -238,15 +242,13 @@ class NetworkService(Service, Singleton):
     @logger.catch
     def activate_finish_callback(self, device, result, data):
         self._client.activate_connection_finish(result)
-        self.notify("primary-connection-type")
 
     @logger.catch
     def deactivate_finish_callback(self, device, result, data):
         self._client.deactivate_connection_finish(result)
-        self.notify("primary-connection-type")
 
     def request_scan(self):
-        if self._client.wireless_get_enabled():
+        if self.wifi_enabled:
             self._wifi_device.request_scan_async(None, self.finish_scan_callback)
 
     @logger.catch
