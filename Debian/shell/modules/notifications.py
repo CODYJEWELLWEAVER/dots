@@ -20,7 +20,7 @@ class NotificationsOverview(Box):
     def __init__(self, on_switch: Callable, **kwargs):
         super().__init__(
             name="notifications-overview",
-            spacing=20,
+            spacing=10,
             orientation="v",
             v_expand=True,
             **kwargs,
@@ -47,15 +47,12 @@ class NotificationsOverview(Box):
             child=Label(
                 label="Notifications",
             ),
-            on_clicked=on_switch
+            on_clicked=on_switch,
         )
         add_hover_cursor(self.switch_button)
 
         self.children = [
-            Box(
-                h_align="center",
-                children=self.switch_button
-            ),
+            Box(h_align="center", children=self.switch_button),
             self.notifications_view,
         ]
 

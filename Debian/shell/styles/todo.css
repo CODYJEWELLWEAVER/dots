@@ -1,0 +1,66 @@
+#to-do-list {
+    padding: 10px;
+    min-width: 500px;
+    background-color: var(--background-highlight);
+    box-shadow: 0px 0px 5px var(--background-highlight);
+}
+
+#to-do-list-box {
+    padding: 0px 10px;
+}
+
+.to-do-item {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px 20px;
+    background-color: var(--background-alt);
+    box-shadow: 0px 0px 5px var(--background-alt);
+}
+
+.to-do-item-child {
+    margin-top: -10px;
+    margin-left: 40px;
+}
+
+.to-do-item-icon {
+    font-family: tabler-icons;
+    font-size: 24px;
+}
+
+.to-do-item-label {
+    font-size: 24px;
+}
+
+#create-to-do-label {
+    font-family: tabler-icons;
+}
+
+#create-to-do-button {
+    margin: 10px;
+    padding: 0px 10px;
+    transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+#create-to-do-button:hover {
+    background-color: var(--background-alt);
+    box-shadow: 0px 0px 5px var(--highlight);
+}
+
+#to-do-text-entry {
+    min-width: 300px;
+    padding: 20px;
+    background-color: var(--background-alt);
+    box-shadow: 0px 0px 5px var(--background-alt);
+}
+
+.add-to-do-button {
+    padding: 10px;
+    min-width: 100px;
+    background-color: var(--background-alt);
+    box-shadow: 0px 0px 5px var(--background-alt);
+    transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.add-to-do-button:hover {
+    box-shadow: 0px 0px 5px var(--highlight);
+}

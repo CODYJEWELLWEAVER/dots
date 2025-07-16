@@ -14,7 +14,7 @@ class ToDoItem:
     def __init__(
         self,
         text: str,
-        completed: bool,
+        completed: bool = False,
         id: str | None = None,
     ):
         self.id = id if id is not None else str(uuid.uuid4())
@@ -26,7 +26,7 @@ class ToDoItem:
             "text": self.text,
             "completed": self.completed,
         }
-    
+
     @classmethod
     def from_json_obj(cls, id: str, json_obj):
         return cls(
@@ -40,8 +40,8 @@ class ToDoItemParent(ToDoItem):
     def __init__(
         self,
         text: str,
-        completed: bool,
-        children: list = [], # list[ToDoItem]
+        completed: bool = False,
+        children: list = [],  # list[ToDoItem]
         id: str | None = None,
     ):
         super().__init__(text, completed, id)
@@ -52,10 +52,10 @@ class ToDoItemParent(ToDoItem):
     def to_json_obj(self) -> dict:
         obj = super().to_json_obj()
         obj["children"] = {
-            id: child.to_json_obj() for id, child in self.children.items() 
+            id: child.to_json_obj() for id, child in self.children.items()
         }
         return obj
-    
+
     @classmethod
     def from_json_obj(cls, id: str, json_obj):
         return cls(
@@ -63,9 +63,9 @@ class ToDoItemParent(ToDoItem):
             text=json_obj["text"],
             completed=json_obj["completed"],
             children=[
-                cls.from_json_obj(id, child_obj) 
+                ToDoItem.from_json_obj(id, child_obj)
                 for id, child_obj in json_obj["children"].items()
-            ]
+            ],
         )
 
 
@@ -73,10 +73,10 @@ class ToDoService(Service, Singleton):
     @Signal("changed")
     def changed(self) -> None: ...
 
-    @Property(list[ToDoItem], flags="readable")
+    @Property(list[ToDoItemParent], flags="readable")
     def to_do_list(self) -> list[ToDoItem]:
         return [
-            ToDoItem.from_json_obj(id, json_obj)
+            ToDoItemParent.from_json_obj(id, json_obj)
             for id, json_obj in self._to_do_list.items()
         ]
 
@@ -98,9 +98,7 @@ class ToDoService(Service, Singleton):
 
             json_file = self._path.open("r+")
         except Exception as e:
-            logger.error(
-                f"Could not initialize TODO json file. Encountered error {e}"
-            )
+            logger.error(f"Could not initialize TODO json file. Encountered error {e}")
         else:
             with json_file:
                 self._to_do_list = json.load(json_file)
@@ -108,7 +106,7 @@ class ToDoService(Service, Singleton):
     def is_initialized(self) -> bool:
         """Details whether this service is in a usable state."""
         return self._path is not None and self._to_do_list is not None
-    
+
     def commit_changes(self) -> None:
         self.emit("changed")
         self.write_to_disk()
@@ -126,6 +124,11 @@ class ToDoService(Service, Singleton):
         self._to_do_list.pop(item.id)
         self.commit_changes()
 
+    def delete_to_do_item_child(self, item: ToDoItemParent, child: ToDoItem):
+        parent = self._to_do_list[item.id]
+        parent["children"].pop(child.id)
+        self.commit_changes()
+
     def add_child_to_item(self, item: ToDoItemParent, child: ToDoItem):
         self._to_do_list[item.id]["children"][child.id] = child.to_json_obj()
         self.commit_changes()
@@ -140,7 +143,9 @@ class ToDoService(Service, Singleton):
 
         self.commit_changes()
 
-    def mark_child_completed(self, item: ToDoItemParent, child: ToDoItem, write: bool = True):
+    def mark_child_completed(
+        self, item: ToDoItemParent, child: ToDoItem, write: bool = True
+    ):
         self._to_do_list[item.id]["children"][child.id]["completed"] = True
         self.commit_changes()
 
@@ -156,3 +161,15 @@ class ToDoService(Service, Singleton):
             self._to_do_list[item.id]["completed"] = False
 
         self.commit_changes()
+
+    def toggle_item_completed(self, item: ToDoItemParent):
+        if item.completed:
+            self.mark_item_not_completed(item)
+        else:
+            self.mark_item_completed(item)
+
+    def toggle_child_completed(self, item: ToDoItemParent, child: ToDoItem):
+        if child.completed:
+            self.mark_child_not_completed(item, child)
+        else:
+            self.mark_child_completed(item, child)

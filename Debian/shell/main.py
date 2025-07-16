@@ -12,8 +12,6 @@ from util.helpers import init_data_directory
 import asyncio
 from gi.events import GLibEventLoopPolicy
 
-from services.todo import ToDoService
-
 
 @logger.catch
 def main():
@@ -29,8 +27,6 @@ def main():
     bar = Bar()
     notification_pop_up = NotificationPopUp()
     osd = OSD()
-
-    ToDoService.get_instance()
 
     app = Application(
         APP_NAME, bar, control_panel, notification_pop_up, osd, open_inspector=False

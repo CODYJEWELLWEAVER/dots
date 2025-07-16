@@ -88,6 +88,12 @@ volume_low: str = "&#xeb4f;"
 
 volume_off: str = "&#xeb50;"
 
+checkbox_unchecked: str = "&#xeb2c;"
+
+checkbox_checked: str = "&#xeb28;"
+
+hierarchy: str = "&#xee9e;"
+
 weather = {
     "Clear-Night": "&#xece7;",
     "Clear-Day": "&#xeb30;",

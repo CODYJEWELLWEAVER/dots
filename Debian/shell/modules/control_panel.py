@@ -15,6 +15,7 @@ from modules.network import NetworkOverview, ConnectionSettings
 from modules.notifications import NotificationsOverview
 from services.reminders import ReminderService
 from modules.reminders import CreateReminderView
+from modules.todo import ToDoList
 
 from gi.repository import GdkPixbuf
 
@@ -43,6 +44,8 @@ class ControlPanel(Window, Singleton):
         self.notifications_overview = NotificationsOverview(
             on_switch=self.show_to_do_list
         )
+
+        self.to_do_list = ToDoList(on_switch=self.show_notifications_overview)
 
         self.profile_image = Box(
             name="profile-image-box",
@@ -82,12 +85,12 @@ class ControlPanel(Window, Singleton):
         self.create_reminder = CreateReminderView(on_close=self.show_main_view)
 
         self.productivity_stack = Stack(
-            transition_duration=400,
-            transition_type='over-left-right',
+            transition_duration=250,
+            transition_type="crossfade",
             name="productivity-stack",
-            children=[
-                self.notifications_overview
-            ]
+            children=[self.notifications_overview, self.to_do_list],
+            h_expand=True,
+            v_expand=True,
         )
 
         self.productivity_stack.set_hhomogeneous(True)
@@ -188,7 +191,10 @@ class ControlPanel(Window, Singleton):
         self.main_content_stack.set_visible_child(self.create_reminder_view)
 
     def show_to_do_list(self, *args):
-        pass
+        self.productivity_stack.set_visible_child(self.to_do_list)
+
+    def show_notifications_overview(self, *args):
+        self.productivity_stack.set_visible_child(self.notifications_overview)
 
 
 class ProfileImage(CustomImage):
