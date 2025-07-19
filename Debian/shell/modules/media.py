@@ -23,7 +23,8 @@ import config.icons as Icons
 """ Side Media control and info module. """
 
 
-# TODO: Refactor all dis
+# I need to update this quite a bit. Was one of the first modules I wrote
+# and I have learned a lot... I could do this much better.
 
 
 class MediaControl(Box):
@@ -162,6 +163,17 @@ class MediaControl(Box):
         """
         Update media info on bar and on media panel
         """
+        self.update_title(metadata)
+
+        self.update_artist(metadata)
+
+        self.update_media_info_visibility(metadata)
+
+        self.update_album(metadata)
+
+        self.update_art(metadata)
+
+    def update_title(self, metadata: dict):
         if "xesam:title" in metadata.keys() and metadata["xesam:title"] != "":
             self.media_info.set_property("visible", True)
 
@@ -177,6 +189,7 @@ class MediaControl(Box):
             self.title.set_property("visible", False)
             self.media_panel.title.set_property("visible", False)
 
+    def update_artist(self, metadata: dict):
         if "xesam:artist" in metadata.keys() and metadata["xesam:artist"] != [""]:
             self.media_info.set_property("visible", True)
 
@@ -196,6 +209,7 @@ class MediaControl(Box):
             self.artist.set_property("visible", False)
             self.media_panel.artist.set_property("visible", False)
 
+    def update_media_info_visibility(self, metadata: dict):
         if (
             "xesam:title" in metadata.keys()
             and metadata["xesam:title"] == ""
@@ -204,12 +218,14 @@ class MediaControl(Box):
         ):
             self.media_info.set_property("visible", False)
 
+    def update_album(self, metadata: dict):
         if "xesam:album" in metadata.keys() and metadata["xesam:album"] != "":
             self.media_panel.album.set_property("label", metadata["xesam:album"])
             self.media_panel.album.set_property("visible", True)
         else:
             self.media_panel.album.set_property("visible", False)
 
+    def update_art(self, metadata: dict):
         if "mpris:artUrl" in metadata.keys():
             file_path = get_file_path_from_mpris_url(metadata["mpris:artUrl"])
             self_width = self.get_preferred_width().natural_width

@@ -64,11 +64,6 @@ class WeatherInfo(Box):
             style_classes="weather-icon", markup=Icons.fahrenheit
         )
 
-        # run callbacks to initialize
-        self.on_status_changed(self.service, GObject.ParamSpecBoolean())
-        self.on_group_changed(self.service, GObject.ParamSpecString())
-        self.on_temperature_changed(self.service, GObject.ParamSpecInt())
-
         if size == "small":
             children = [self.weather_icon_box, self.temperature, self.temperature_icon]
         else:

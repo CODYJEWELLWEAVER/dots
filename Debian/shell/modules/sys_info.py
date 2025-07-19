@@ -65,6 +65,7 @@ class GPUUsage(Box):
                 icon=Icons.gpu,
                 poll_func=self._get_usage,
             ),
+            **kwargs
         )
 
     def _get_usage(self, *_):

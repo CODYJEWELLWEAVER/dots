@@ -16,10 +16,9 @@ from modules.notifications import NotificationsOverview
 from services.reminders import ReminderService
 from modules.reminders import CreateReminderView
 from modules.todo import ToDoList
+from util.ui import corner
 
 from gi.repository import GdkPixbuf
-
-# TODO: Fix some small issues with the content stack and how the animations look
 
 
 class ControlPanel(Window, Singleton):
@@ -39,6 +38,7 @@ class ControlPanel(Window, Singleton):
         self.reminder_service = ReminderService.get_instance()
 
         self.network_overview = NetworkOverview(self.show_connections_view)
+
         self.connection_settings = ConnectionSettings(self.show_main_view)
 
         self.notifications_overview = NotificationsOverview(
@@ -93,9 +93,6 @@ class ControlPanel(Window, Singleton):
             v_expand=True,
         )
 
-        self.productivity_stack.set_hhomogeneous(True)
-        self.productivity_stack.set_vhomogeneous(True)
-
         self.top_row = Box(
             orientation="h",
             spacing=40,
@@ -118,7 +115,7 @@ class ControlPanel(Window, Singleton):
         self.main_view = Box(
             orientation="h",
             children=[
-                self.left_corner(),
+                corner("left", "large"),
                 Box(
                     style_classes="view-box",
                     spacing=40,
@@ -128,25 +125,25 @@ class ControlPanel(Window, Singleton):
                         self.bottom_row,
                     ],
                 ),
-                self.right_corner(),
+                corner("right", "large"),
             ],
         )
 
         self.connections_view = Box(
             orientation="h",
             children=[
-                self.left_corner(),
+                corner("left", "large"),
                 self.connection_settings,
-                self.right_corner(),
+                corner("right", "large"),
             ],
         )
 
         self.create_reminder_view = Box(
             orientation="h",
             children=[
-                self.left_corner(),
+                corner("left", "large"),
                 self.create_reminder,
-                self.right_corner(),
+                corner("right", "large"),
             ],
         )
 
@@ -159,7 +156,8 @@ class ControlPanel(Window, Singleton):
             children=[self.main_view, self.connections_view, self.create_reminder_view],
         )
 
-        # allow stack to grow and shrink with each child
+        # allow stack to grow and shrink horizontally with each child
+        # TODO: there has to be a better way to do this...
         self.main_content_stack.set_hhomogeneous(False)
 
         self.show_main_view()
@@ -168,17 +166,6 @@ class ControlPanel(Window, Singleton):
 
         self.connect("focus-out-event", lambda *_: self.hide())
 
-    def left_corner(self) -> Box:
-        return Box(
-            style_classes="corner-box",
-            children=Corner("top-right", style_classes="left-corner", size=(225, 75)),
-        )
-
-    def right_corner(self) -> Box:
-        return Box(
-            style_classes="corner-box",
-            children=Corner("top-left", style_classes="right-corner", size=(225, 75)),
-        )
 
     def show_main_view(self, *args):
         self.main_content_stack.set_visible_child(self.main_view)

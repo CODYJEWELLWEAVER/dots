@@ -30,13 +30,9 @@ class CalendarService(Service, Singleton):
         # check every minute for change of date
         invoke_repeater(UPDATE_INTERVAL, self.update_today)  # 60 seconds
 
-    @Property(Date, flags="read-write")
+    @Property(Date, flags="readable")
     def today(self) -> Date:
         return self._today
-
-    @today.setter
-    def today(self, new_date: Date) -> None:
-        self._today = new_date
 
     @Property(Date, flags="read-write")
     def selected_date(self) -> Date:
@@ -107,7 +103,8 @@ class CalendarService(Service, Singleton):
         today = Date.today()
 
         if today != self.today:
-            self.today = today
+            self._today = today
+            self.notify("today")
 
         return True
 

@@ -1,4 +1,6 @@
+from typing import Literal
 from gi.repository import Gdk
+from fabric.widgets.shapes import Corner
 
 
 def add_hover_cursor(widget):
@@ -18,9 +20,25 @@ def add_hover_cursor(widget):
     )
 
 
-def toggle_visible(widget):
+def toggle_visible(*widgets):
     """
     Show or hide widget based on current visibility.
     """
-    is_visible = widget.get_visible()
-    widget.set_visible(not is_visible)
+    for widget in widgets:
+        is_visible = widget.get_visible()
+        widget.set_visible(not is_visible)
+
+
+def corner(position: Literal["left", "right"], size: Literal["small", "large"]):
+    size = (225, 75) if size == "large" else (75, 25)
+    if position == "left":
+        orientation = "top-right"
+        style_class = "left-corner"
+    else:
+        orientation = "top-left"
+        style_class = "right-corner"
+    return Corner(
+        orientation=orientation,
+        style_classes=style_class,
+        size=size
+    )

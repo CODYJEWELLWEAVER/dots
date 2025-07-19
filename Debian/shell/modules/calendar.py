@@ -30,6 +30,7 @@ class Calendar(Box):
         self.show_reminder_creation_view = show_reminder_creation_view
 
         self.calendar_service = CalendarService.get_instance()
+        
         self.reminder_service = ReminderService.get_instance()
 
         self.day_label = Label(
@@ -245,18 +246,14 @@ class Calendar(Box):
     # TODO: Fix all these toggle visible calls
     def do_select_day(self, date):
         self.calendar_service.selected_date = date
-        toggle_visible(self.day_label)
-        toggle_visible(self.day_calendar)
-        toggle_visible(self.day_view)
+        toggle_visible(self.day_label, self.day_calendar, self.day_view)
 
     def do_swap_calendar(self, *args):
         toggle_visible(self.day_calendar)
         if self.day_view.is_visible():
-            toggle_visible(self.day_view)
-            toggle_visible(self.day_label)
+            toggle_visible(self.day_view, self.day_label)
         else:
-            toggle_visible(self.month_calendar)
-            toggle_visible(self.month_label)
+            toggle_visible(self.month_calendar, self.month_label)
 
     def on_selected_date_changed(self, service: CalendarService, _):
         self.day_calendar.children = self.get_day_buttons()

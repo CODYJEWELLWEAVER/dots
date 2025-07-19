@@ -41,7 +41,7 @@ class ToDoItemParent(ToDoItem):
         self,
         text: str,
         completed: bool = False,
-        children: list = [],  # list[ToDoItem]
+        children: list[ToDoItem] = [],
         id: str | None = None,
     ):
         super().__init__(text, completed, id)
@@ -144,7 +144,7 @@ class ToDoService(Service, Singleton):
         self.commit_changes()
 
     def mark_child_completed(
-        self, item: ToDoItemParent, child: ToDoItem, write: bool = True
+        self, item: ToDoItemParent, child: ToDoItem
     ):
         self._to_do_list[item.id]["children"][child.id]["completed"] = True
         self.commit_changes()

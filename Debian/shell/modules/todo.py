@@ -52,11 +52,8 @@ class ToDoListElement(Box):
 
         if not is_child_element:
             add_child_button = Button(
-                child=Label(
-                    style_classes="to-do-item-icon",
-                    markup=Icons.hierarchy
-                ),
-                on_clicked=on_add_child
+                child=Label(style_classes="to-do-item-icon", markup=Icons.hierarchy),
+                on_clicked=on_add_child,
             )
             add_hover_cursor(add_child_button)
 
@@ -72,7 +69,7 @@ class ToDoListElement(Box):
         self.add(checkbox)
         self.add(item_label)
         if not is_child_element:
-            self.add(add_child_button) 
+            self.add(add_child_button)
         self.add(delete_button)
 
 
@@ -87,10 +84,7 @@ class ToDoList(Box):
         self.to_do_service = ToDoService.get_instance()
 
         self.to_do_text_entry = Entry(
-            name="to-do-text-entry",
-            placeholder="text",
-            h_expand=True,
-            h_align="center"
+            name="to-do-text-entry", placeholder="text", h_expand=True, h_align="center"
         )
 
         self.add_button = Button(
@@ -99,7 +93,7 @@ class ToDoList(Box):
             child=Label(
                 label="Add",
             ),
-            on_clicked=self.on_add_to_do
+            on_clicked=self.on_add_to_do,
         )
         add_hover_cursor(self.add_button)
         self.add_button.set_sensitive(False)
@@ -110,7 +104,7 @@ class ToDoList(Box):
             child=Label(
                 label="Cancel",
             ),
-            on_clicked=self.on_cancel_add_to_do
+            on_clicked=self.on_cancel_add_to_do,
         )
         add_hover_cursor(self.cancel_add_button)
 
@@ -127,12 +121,9 @@ class ToDoList(Box):
                 Box(
                     spacing=10,
                     orientation="h",
-                    children=[
-                        self.add_button,
-                        self.cancel_add_button
-                    ]
-                )
-            ]
+                    children=[self.add_button, self.cancel_add_button],
+                ),
+            ],
         )
 
         self.to_do_list = Box(
@@ -165,7 +156,7 @@ class ToDoList(Box):
                 markup=Icons.plus,
                 name="create-to-do-label",
             ),
-            on_clicked=self.show_creation_view
+            on_clicked=self.show_creation_view,
         )
         add_hover_cursor(self.create_button)
 
@@ -173,26 +164,24 @@ class ToDoList(Box):
             CenterBox(
                 v_align="center",
                 center_children=self.switch_button,
-                end_children=self.create_button
+                end_children=self.create_button,
             ),
             self.to_do_view,
-            self.create_to_do_view
+            self.create_to_do_view,
         ]
 
         self.to_do_service.connect("changed", self.on_changed)
 
-        self.to_do_text_entry.connect(
-            "notify::text", self.on_notify_text
-        )
+        self.to_do_text_entry.connect("notify::text", self.on_notify_text)
 
     def show_creation_view(self, *args, parent: ToDoItemParent | None = None):
         self.parent_item = parent
         self.toggle_view()
 
     def toggle_view(self, *args):
-        toggle_visible(self.create_button)
         toggle_visible(self.to_do_view)
         toggle_visible(self.create_to_do_view)
+        self.create_button.set_sensitive(not self.create_to_do_view.is_visible())
 
     def get_to_do_list_elements(self):
         elements = []
@@ -204,8 +193,9 @@ class ToDoList(Box):
                     item=item: self.to_do_service.toggle_item_completed(item),
                     on_delete=lambda *_,
                     item=item: self.to_do_service.delete_to_do_item(item),
-                    on_add_child=lambda *_, item=item:
-                    self.show_creation_view(parent=item)
+                    on_add_child=lambda *_, item=item: self.show_creation_view(
+                        parent=item
+                    ),
                 )
             )
             for child in item.children.values():
@@ -235,13 +225,9 @@ class ToDoList(Box):
     def on_add_to_do(self, *args):
         text = self.to_do_text_entry.get_text()
         if self.parent_item is None:
-            self.to_do_service.add_to_do_item(
-                ToDoItemParent(text)
-            )
+            self.to_do_service.add_to_do_item(ToDoItemParent(text))
         else:
-            self.to_do_service.add_child_to_item(
-                self.parent_item, ToDoItem(text)
-            )
+            self.to_do_service.add_child_to_item(self.parent_item, ToDoItem(text))
             self.parent_item = None
         self.to_do_text_entry.set_text("")
         self.toggle_view()

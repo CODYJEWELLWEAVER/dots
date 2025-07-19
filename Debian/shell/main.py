@@ -12,7 +12,6 @@ from util.helpers import init_data_directory
 import asyncio
 from gi.events import GLibEventLoopPolicy
 
-
 @logger.catch
 def main():
     APP_NAME = "Fabric-Shell"

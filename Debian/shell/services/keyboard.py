@@ -16,4 +16,4 @@ class KeyboardService(Service, Singleton):
 
         self.kbd_config = Gkbd.Configuration.get()
 
-        self.kbd_config.connect(None, lambda *args: print(args))
+        print(self.kbd_config)

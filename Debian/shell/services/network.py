@@ -24,7 +24,6 @@ class NetworkService(Service, Singleton):
         self._devices = self._client.get_devices()
         self._wifi_device = self.get_default_wifi_device()
 
-        # TODO: Double check this is set correctly if no wifi device is found
         self._wifi_enabled = (
             self._client.wireless_get_enabled()
             if self.get_wifi_devices() != []
@@ -78,7 +77,6 @@ class NetworkService(Service, Singleton):
     def active_connections(self) -> List[NM.ActiveConnection] | None:
         active_connections = self._client.get_active_connections()
         if active_connections is not None:
-            # ignore loopback connection
             return [con for con in active_connections if con.get_id() != "lo"]
         return None
 
@@ -205,7 +203,6 @@ class NetworkService(Service, Singleton):
     def delete_connection_finish_callback(self, connection, result, data):
         connection.delete_finish(result)
 
-    # TODO: Test this for when wifi is not available
     def toggle_wireless(self):
         if self.get_wifi_devices() != []:
             enabled = self.wifi_enabled

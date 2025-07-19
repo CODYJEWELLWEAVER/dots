@@ -26,6 +26,7 @@ class CreateReminderButton(Button):
                 ],
             ),
             on_clicked=on_clicked,
+            **kwargs
         )
 
         add_hover_cursor(self)
@@ -89,14 +90,13 @@ class CreateReminderView(Box):
 
         back_button = Button(
             child=Label(markup=Icons.arrow_right),
-            on_clicked=self.on_close,
+            on_clicked=self.close,
         )
         add_hover_cursor(back_button)
 
         self.add(back_button)
 
         self.calendar_service = CalendarService.get_instance()
-        self.set_date()
 
         self.reminder_service = ReminderService.get_instance()
 
@@ -112,8 +112,7 @@ class CreateReminderView(Box):
         reminder = Reminder(title, date, time)
         self.reminder_service.add_reminder(reminder)
 
-        self.on_close()
-        self.reset()
+        self.close()
 
     def reset(self):
         self.title_entry.set_text("")
@@ -123,6 +122,10 @@ class CreateReminderView(Box):
         )
         self.time_selection.minute = Label(label="00")
         self.time_selection.am_pm_label = Label("PM")
+
+    def close(self, *args):
+        self.on_close()
+        self.reset()
 
     def set_date(self):
         self.date_label.set_property("label", f"Reminder for: {self.get_date_text()}")

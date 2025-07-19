@@ -11,6 +11,7 @@ from modules.media import MediaControl
 from modules.power import PowerControl
 from modules.sys_info import CPUUsage, GPUUsage, RAM, Disk, NetworkInfo
 from modules.weather import WeatherInfo
+from util.ui import corner
 
 
 from gi.repository import Playerctl
@@ -34,6 +35,7 @@ class Bar(Window):
         self.control_panel = ControlPanel.get_instance()
 
         self.player_manager = Playerctl.PlayerManager()
+        
         self.media = MediaControl(self.player_manager)
 
         self.power = PowerControl()
@@ -56,14 +58,15 @@ class Bar(Window):
             name="date-time",
         )
 
+        # event box to expand control panel
         self.control_panel_expander = EventBox(
             events="enter-notify",
             child=Box(
                 name="expander-box",
                 children=[
-                    Corner(orientation="top-right", name="left-corner", size=(75, 25)),
+                    corner("left", "small"),
                     self.date_time,
-                    Corner(orientation="top-left", name="right-corner", size=(75, 25)),
+                    corner("right", "small"),
                 ],
             ),
         )

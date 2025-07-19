@@ -42,7 +42,7 @@ class OSD(Window):
             **kwargs,
         )
 
-        self.hide_timeout_id = None
+        self.timeout_id = None
 
         self.volume_service = VolumeService.get_instance()
 
@@ -88,9 +88,9 @@ class OSD(Window):
         return False
 
     def on_volume_changed(self, *args):
-        if self.hide_timeout_id is not None:
-            GLib.source_remove(self.hide_timeout_id)
-            self.hide_timeout_id = None
+        if self.timeout_id is not None:
+            GLib.source_remove(self.timeout_id)
+            self.timeout_id = None
 
         volume = self.volume_service.volume
         is_muted = self.volume_service.is_muted
@@ -107,4 +107,4 @@ class OSD(Window):
 
         self.show_volume_element()
 
-        self.hide_timeout_id = GLib.timeout_add(TIMEOUT_DELAY, self.on_timeout_expired)
+        self.timeout_id = GLib.timeout_add(TIMEOUT_DELAY, self.on_timeout_expired)

@@ -1,3 +1,4 @@
+from typing import Callable
 from fabric.widgets.wayland import WaylandWindow as Window
 from fabric.widgets.label import Label
 from fabric.widgets.button import Button
@@ -54,16 +55,7 @@ class PowerMenu(Window):
             orientation="v",
         )
 
-        # dialogs for confirming reboot/suspend/poweroff
-        self.reboot_dialog = ConfirmationDialog(
-            "Do you want to reboot?", self.reboot_system
-        )
-        self.suspend_dialog = ConfirmationDialog(
-            "Do you want to suspend?", self.suspend_system
-        )
-        self.shutdown_dialog = ConfirmationDialog(
-            "Do you want to power off?", self.shutdown_system
-        )
+        self.power_dialog = None
 
         self.lock_button = Button(
             child=Label(style_classes="power-menu-icon", markup=Icons.lock),
@@ -102,23 +94,43 @@ class PowerMenu(Window):
 
         self.children = self.menu
 
+    def destroy_dialog(self, *args):
+        if self.power_dialog is not None:
+            self.power_dialog.hide()
+            self.power_dialog = None
+
     def show_reboot_dialog(self, *args):
-        toggle_visible(self)
-        self.suspend_dialog.set_visible(False)
-        self.shutdown_dialog.set_visible(False)
-        toggle_visible(self.reboot_dialog)
+        self.destroy_dialog()
+
+        self.power_dialog = ConfirmationDialogRefactor(
+            prompt="Do you want to reboot?",
+            yes_callback=self.reboot_system,
+            no_callback=self.destroy_dialog,
+        )
+
+        self.power_dialog.show()
 
     def show_suspend_dialog(self, *args):
-        toggle_visible(self)
-        self.reboot_dialog.set_visible(False)
-        self.shutdown_dialog.set_visible(False)
-        toggle_visible(self.suspend_dialog)
+        self.destroy_dialog()
+
+        self.power_dialog = ConfirmationDialogRefactor(
+            prompt="Do you want to suspend?",
+            yes_callback=self.suspend_system,
+            no_callback=self.destroy_dialog,
+        )
+
+        self.power_dialog.show()
 
     def show_shutdown_dialog(self, *args):
-        toggle_visible(self)
-        self.suspend_dialog.set_visible(False)
-        self.reboot_dialog.set_visible(False)
-        toggle_visible(self.shutdown_dialog)
+        self.destroy_dialog()
+
+        self.power_dialog = ConfirmationDialogRefactor(
+            prompt="Do you want to power off?",
+            yes_callback=self.shutdown_system,
+            no_callback=self.destroy_dialog,
+        )
+
+        self.power_dialog.show()
 
     def lock_screen(self, *args):
         toggle_visible(self)
@@ -134,10 +146,10 @@ class PowerMenu(Window):
         exec_shell_command("systemctl poweroff")
 
 
-class ConfirmationDialog(Window):
+class ConfirmationDialogRefactor(Window):
     """Simple window to confirm action."""
 
-    def __init__(self, prompt, action_callback, **kwargs):
+    def __init__(self, prompt, yes_callback: Callable, no_callback: Callable, **kwargs):
         super().__init__(
             style_classes="confirm-dialog",
             layer="top",
@@ -163,14 +175,14 @@ class ConfirmationDialog(Window):
         self.yes_button = Button(
             style_classes="confirmation-menu-button",
             child=Label("Yes", style_classes="power-menu-label"),
-            on_clicked=action_callback,
+            on_clicked=yes_callback,
         )
         add_hover_cursor(self.yes_button)
 
         self.no_button = Button(
             style_classes="confirmation-menu-button",
             child=Label("No", style_classes="power-menu-label"),
-            on_clicked=lambda *_: toggle_visible(self),
+            on_clicked=no_callback,
         )
         add_hover_cursor(self.no_button)
 
